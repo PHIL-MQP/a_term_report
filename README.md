@@ -1,2 +1,2 @@
-# reports
+# Reports
 Termly and final reports
