@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{siunitx}
 \usepackage[utf8]{inputenc}
 \begin{document}
 
@@ -9,11 +10,13 @@
 
 \section{Introduction}
 
-Explain the motivation for our project and our what our goals are.
+Knowing the position and orientation of a mobile robot is critical to many tasks. For robots designed for high-speed gameplay, knowing the position and orientation allows the robot to perform complex autonomous behaviors such as shooting and retreiving game objects. In this report, we describe a system for determining the pose $(x, y, \theta)$ of a mobile robot in a cluttered environment. The environment we are interested in is the FIRST Robotics Competition (FRC). FRC is a challenging environment because the robots make with rapid and aggressive maneuvers by human drivers for part of the time, and at other times are under complete autonomy. A localization system for FRC must handle up to six robots, occlusion from the playing field elements, and other unpredictable conditions. Our research suggests that there are at least four appropriate methods for localization: cameras and tags, radio and ultrasonic beacons, optical flow, and dead reckoning with encoders and an IMU. All of these methods have seen success in robot localization, and we will thoroughly present their strengths and weaknesses in the Methods section.
 
 \section{Related Work}
 
 Here we will go over all the papers we read and sources we talked to. Explain what if any of our approach is novel and what is built on existing approaches.
+
+Beacon systems have been used many times with success in the literature. In \cite{bahl_radar:_2000}, beacons identified the location of people moving around buildings using signal strength information in the 2.4gHz band received at three or more beacons, and they report accuracy of a few meters with an update rate of at most four times per second. The systems described in \cite{digiampaolo_mobile_2014} uses passive RFID tags on the ceiling and an RFID transmitter on the robot, and report an accuracy of 4cm within a 5\si{\square\meter}.
 
 \section{Methods}
 
@@ -27,4 +30,6 @@ Duh.
 LOL
 
 
+\bibliographystyle{plain}
+\bibliography{phil-mqp}
 \end{document}
