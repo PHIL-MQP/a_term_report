@@ -19,6 +19,17 @@ This report begins with a review of existing literature on indoor localization f
 
 \section{Related Work} \label{related_work}
 
+Robot localization has been studied for decades. Overall, the problem of localizing a mobile robot can be viewed as accurately measure the absolute distance to known landmarks, or by measuring the changes in position over time. We will henceforth refer to these two ideas as global and local pose estimation. Some of the high level techniques for robot localization are: measuring range at various points around the robot and matching these readings to a map, measuring time of flight or difference of time of arrival to calculate distance to known locations, recognizing landmarks in some modality and computing pose relative to those landmarks, and measuring changes in pose and accumulating these changes over time. There are different sensors that can be used for each of these techniques, such as laser range finders, ultrasonic, cameras, intertial measurement units (IMU), encoders, radio, visible light, and human-audible sound. Although there are a tremendous number of possible methods for robot localization, there are a select few which have received the most attention and shown the most success. These include:
+\begin{itemize}
+    \item Lidar mapping
+    \item Ultrasonic mappping
+    \item IMU and Encoders fusion
+    \item Infrared or Radio and Ultrasonic beacons
+    \item cameras with visually identifiable tags
+    \item Optical flow mice and cameras
+    \item Stereo vision and depth cameras
+\end{itemize}
+
 **Here we will go over all the papers we read and sources we talked to. Explain what if any of our approach is novel and what is built on existing approaches.
 
 Beacon systems have been used many times with success in the literature. Generally, these systems ultrasound and or radio as a medium and either signal strength, phase shift, or time to measure distance to the beacons. Among radio systems, the system in \cite{bahl_radar:_2000} identified the location of people moving around buildings using signal strength in the 2.4gHz band received at three or more beacons, and they report accuracy of a few meters with an update rate of at most four times per second. The systems described in \cite{digiampaolo_mobile_2014} uses passive RFID tags on the ceiling and an RFID transmitter on the robot, and report an accuracy of 4\si{\centi\meter} within a 5\si{\square\meter}. Another RFID system \cite{saab_standalone_2011} also uses signal strength to RFID, and reports accuracies for various configurations ranging from 1\si{\centi\meter} to 3\si{\meter}. These RFID systems require readers that cost over \$500. There are also countless localization systems that use standard wireless networks. A comprehensive survey of these systems can be found in \cite{liu_survey_2007}. Systems that use signal strength in standard wireless LAN networks have achieved up to 10\si{\centi\meter} accuracy and hundreds of updates per second. Another radio beacon solution is to substitute single-frequency radio with Ultra-wideband radio. These systems can achieve centimeter level accuracy, but they use obscure or custom made transmitters and receivers that cost in the hundreds of dollars \cite{noauthor_dart_nodate} \cite{noauthor_pozyx_nodate}.
