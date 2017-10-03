@@ -1,5 +1,7 @@
 \documentclass{article}
 \usepackage[margin=1.5in]{geometry}
+\usepackage{graphicx}
+\usepackage{nameref}
 \usepackage{siunitx}
 \usepackage[utf8]{inputenc}
 \begin{document}
@@ -11,27 +13,46 @@
 
 \section{Introduction}
 
-Knowing the position and orientation of a mobile robot is critical to many tasks. For robots designed for high-speed gameplay, knowing the position and orientation allows the robot to perform complex autonomous behaviors such as shooting and retreiving game objects. In this report, we describe a system for determining the pose $(x, y, \theta)$ of a mobile robot in a cluttered environment. The environment we are interested in is the FIRST Robotics Competition (FRC). FRC is a challenging environment because the robots make with rapid and aggressive maneuvers by human drivers for part of the time, and at other times are under complete autonomy. A localization system for FRC must handle up to six robots, occlusion from the playing field elements, and other unpredictable conditions. Our research suggests that there are at least four appropriate methods for localization: cameras and tags, radio and ultrasonic beacons, optical flow, and dead reckoning with encoders and an IMU. All of these methods have seen success in robot localization, and we will thoroughly present their strengths and weaknesses in the Methods section.
+Knowing the position and orientation of a mobile robot is critical to many tasks. For robots designed for high-speed gameplay, knowing the position and orientation allows the robot to perform complex autonomous behaviors such as shooting and retrieving game objects. In this report, we describe a system for determining the pose $(x, y, \theta)$ of a mobile robot in a cluttered environment. The environment we are interested in is the FIRST Robotics Competition (FRC). FRC is a challenging environment because the robots make with rapid and aggressive maneuvers by human drivers for part of the time, and at other times are under complete autonomy. A localization system for FRC must handle up to six robots, occlusion from the playing field elements, and other unpredictable conditions. Our research suggests that there are at least four appropriate methods for localization: cameras and tags, radio and ultrasonic beacons, optical flow, and dead reckoning with encoders and an IMU. All of these methods have seen success in robot localization.
 
-\section{Related Work}
+This report begins with a review of existing literature on indoor localization for mobile robots in the \nameref{related_work} section. The strengths and weaknesses of these existing methods are described in the \nameref{methods} section. The \nameref{experiments} section contains information on experiments we conducted, and the \nameref{conclusion} section details our plan moving forward.
 
-Here we will go over all the papers we read and sources we talked to. Explain what if any of our approach is novel and what is built on existing approaches.
+\section{Related Work} \label{related_work}
 
-Beacon systems have been used many times with success in the literature. Generally, these systems ultrasound and or radio as a medium and either signal strength, phase shift, or time to measure distance to the beacons. Among radio systems, the system in \cite{bahl_radar:_2000} identified the location of people moving around buildings using signal strength in the 2.4gHz band received at three or more beacons, and they report accuracy of a few meters with an update rate of at most four times per second. The systems described in \cite{digiampaolo_mobile_2014} uses passive RFID tags on the ceiling and an RFID transmitter on the robot, and report an accuracy of 4\si{\centi\meter} within a 5\si{\square\meter}. Another RFID system \cite{saab_standalone_2011} also uses signal strength to RFID, and reports accuracies for various configurations ranging from 1\si{\centi\meter} to 3\si{\meter}. These RFID systems require readers that cost over \$500. There are also countless localization systems that use standard wireless networks. A comprehensive survey of these systems can be found in \cite{liu_survey_2007}. Systems that use signal strength in standard wireless LAN networks have acheived up to 10\si{\centi\meter} accuracy and hundreds of updates per second. Another radio beacon solution is to substitute single-frequency radio with Ultra-wideband radio. These systems can acheive centimeter level accuracy, but they require obscure or custom made transmiters and receivers that cost in the hundreds of dollars \cite{noauthor_dart_nodate} \cite{noauthor_pozyx_nodate}.
+**Here we will go over all the papers we read and sources we talked to. Explain what if any of our approach is novel and what is built on existing approaches.
 
-Many beacon systems use the relatively slow speed of ultrasonic to measure distance. Systems like \cite{smith_tracking_2004} \cite{ward_new_1997} \cite{kim_advanced_2008} send radio pulses followed by ultrasonic pulses. Nodes in the network us the difference in arrival time of these two signals to measure distance. Alternately, some systems use infrared pulses in place of radio \cite{ghidary_new_1999} \cite{yucel_development_2012}. These systems are inexpensive, and report accuracy of between 2 and 14\si{\centi\meter}.
+Beacon systems have been used many times with success in the literature. Generally, these systems ultrasound and or radio as a medium and either signal strength, phase shift, or time to measure distance to the beacons. Among radio systems, the system in \cite{bahl_radar:_2000} identified the location of people moving around buildings using signal strength in the 2.4gHz band received at three or more beacons, and they report accuracy of a few meters with an update rate of at most four times per second. The systems described in \cite{digiampaolo_mobile_2014} uses passive RFID tags on the ceiling and an RFID transmitter on the robot, and report an accuracy of 4\si{\centi\meter} within a 5\si{\square\meter}. Another RFID system \cite{saab_standalone_2011} also uses signal strength to RFID, and reports accuracies for various configurations ranging from 1\si{\centi\meter} to 3\si{\meter}. These RFID systems require readers that cost over \$500. There are also countless localization systems that use standard wireless networks. A comprehensive survey of these systems can be found in \cite{liu_survey_2007}. Systems that use signal strength in standard wireless LAN networks have achieved up to 10\si{\centi\meter} accuracy and hundreds of updates per second. Another radio beacon solution is to substitute single-frequency radio with Ultra-wideband radio. These systems can achieve centimeter level accuracy, but they use obscure or custom made transmitters and receivers that cost in the hundreds of dollars \cite{noauthor_dart_nodate} \cite{noauthor_pozyx_nodate}.
 
-\section{Methods}
+Many beacon systems use the speed difference between sound and electromagnetic waves to measure system. Systems like \cite{smith_tracking_2004} \cite{ward_new_1997} \cite{kim_advanced_2008} send radio pulses followed by ultrasonic pulses. Nodes in the network us the difference in arrival time of these two signals to measure distance. Alternately, some systems use infrared pulses in place of radio \cite{ghidary_new_1999} \cite{yucel_development_2012}. These systems are inexpensive, and report accuracy of between 2 and 14\si{\centi\meter}.
 
-How do we do our tests.
+\section{Evaluation of Localization Techniques} \label{methods}
 
-\section{Results}
+\section{Experimental Results} \label{experiments}
 
-Duh.
+**How did we test ArUco tags, IMUs, Optimal Flow. What results? Be specific. Include any relevant charts or equations.
 
-\section{Conclusion}
-LOL
+We demonstrated radio communication between two microcontrollers and tested the effect of distance and occlusion. The results can be seen in Figure \ref{fig:example}.
 
+\begin{figure}
+  \centering
+  \includegraphics[width=0.5\linewidth]{example.jpg}
+  \caption{Example figure.}
+  \label{fig:example}
+\end{figure}
+
+
+\section{Conclusion} \label{conclusion}
+
+Based on the extensive literature review and the few preliminary experiments we've conducted, we eliminated our initial list of possible techniques down to the following five:
+\begin{enumerate}
+    \item Radio and ultrasonic beacons
+    \item IMU
+    \item Drive wheel encoders
+    \item Optical flow
+    \item Camera with matrix tags
+\end{enumerate}
+
+We have found examples of each of these techniques being used successfully, and in many cases have verified that they satisfy our criteria for accuracy, precision, update rate, and accessibility criteria. We are confident that any combination of these methods would work. Nonetheless, it is unreasonable to attempt to use all of these methods in the time frame of this project, and therefore we have decided to use beacons, optical flow, and matrix tags in our solution. Optical flow gives us accurate angle measurements and fast updates that are relative to our current position. The camera also doubles as a sensor for matrix tags, which give us accurate position estimates in the global frame. This is complemented by beacons, which update more slowly, but are not effected by occlusion and is robust to vibration.
 
 \bibliographystyle{plain}
 \bibliography{phil-mqp}
