@@ -4,6 +4,8 @@
 \usepackage{nameref}
 \usepackage{siunitx}
 \usepackage[utf8]{inputenc}
+\usepackage[toc,page]{appendix}
+
 \begin{document}
 
 \title{Localization for FRC \\
@@ -51,16 +53,7 @@ The camera also doubles as a sensor for matrix tags, which give us accurate posi
 
 **How did we test ArUco tags, IMUs, Optimal Flow. What results? Be specific. Include any relevant charts or equations.
 
-We demonstrated radio communication between two microcontrollers and tested the effect of distance and occlusion. The results can be seen in Figure \ref{fig:example}{A Term Report}
-
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.5\linewidth]{example.jpg}
-  \caption{Example figure.}
-  \label{fig:example}
-\end{figure}
-
+We demonstrated radio communication between two microcontrollers and tested the effect of distance and occlusion.
 
 \section{Conclusion} \label{conclusion}
 
@@ -78,6 +71,32 @@ We have found examples of each of these techniques being used successfully, and 
 % TODO: explain the parts we know in detail, like the proposed beacon protocol
 
 % TODO: Setup appendix for things like the survey
+
+\begin{appendices}
+  \chapter{Appendix A} \\
+
+  Survery Responses
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{./survey_angle.png}
+    \label{fig:survey_angle}
+  \end{figure}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{./survey_position.png}
+    \label{fig:survey_position}
+  \end{figure}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{./survey_worth.png}
+    \label{fig:survey_worth}
+  \end{figure}
+
+\end{appendices}
+
 
 \bibliographystyle{plain}
 \bibliography{phil-mqp}
