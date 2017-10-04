@@ -6,20 +6,24 @@
 \usepackage[utf8]{inputenc}
 \begin{document}
 
-\title{A Term Report}
+\title{Localization for FRC \\
+  \large{A Term Report}
+  }
 \author{Jinan (Dorothy) Hu, Peter Mitrano, Kacper Puczydlowski, Nicolette Vere}
 
 \maketitle{}
 
 \section{Introduction}
 
-Knowing the position and orientation of a mobile robot is critical to many tasks. For robots designed for high-speed gameplay, knowing the position and orientation allows the robot to perform complex autonomous behaviors such as shooting and retrieving game objects. In this report, we describe a system for determining the pose $(x, y, \theta)$ of a mobile robot in a cluttered environment. The environment we are interested in is the FIRST Robotics Competition (FRC). FRC is a challenging environment because the robots make with rapid and aggressive maneuvers by human drivers for part of the time, and at other times are under complete autonomy. A localization system for FRC must handle up to six robots, occlusion from the playing field elements, and other unpredictable conditions. Our research suggests that there are at least four appropriate methods for localization: cameras and tags, radio and ultrasonic beacons, optical flow, and dead reckoning with encoders and an IMU. All of these methods have seen success in robot localization.
+Knowing the position and orientation of a mobile robot is critical to many tasks. For robots designed for high-speed gameplay, knowing the position and orientation allows the robot to perform complex autonomous behaviors such as shooting and retrieving game objects. In this report, we describe a system for determining the pose $(x, y, \theta)$ of a mobile robot in a cluttered environment. The environment we are interested in is the FIRST Robotics Competition (FRC). FRC is a challenging environment because the robots make rapid and aggressive maneuvers by human drivers for part of the time, and at other times are under complete autonomy. A successful localization system for FRC must handle up to six robots, occlusion from the playing field elements, unpredictable lighting, and frequent impacts. Our research suggests that there are at least five appropriate methods for localization: cameras and tags, radio and ultrasonic beacons, optical flow, and dead reckoning with encoders, and dead reckoning with an IMU. All of these methods have seen success in robot localization.
 
 This report begins with a review of existing literature on indoor localization for mobile robots in the \nameref{related_work} section. The strengths and weaknesses of these existing methods are described in the \nameref{methods} section. The \nameref{experiments} section contains information on experiments we conducted, and the \nameref{conclusion} section details our plan moving forward.
 
 \section{Related Work} \label{related_work}
 
-Robot localization has been studied for decades. Overall, the problem of localizing a mobile robot can be viewed as accurately measure the absolute distance to known landmarks, or by measuring the changes in position over time. We will henceforth refer to these two ideas as global and local pose estimation. Some of the high level techniques for robot localization are: measuring range at various points around the robot and matching these readings to a map, measuring time of flight or difference of time of arrival to calculate distance to known locations, recognizing landmarks in some modality and computing pose relative to those landmarks, and measuring changes in pose and accumulating these changes over time. There are different sensors that can be used for each of these techniques, such as laser range finders, ultrasonic, cameras, intertial measurement units (IMU), encoders, radio, visible light, and human-audible sound. Although there are a tremendous number of possible methods for robot localization, there are a select few which have received the most attention and shown the most success. These include:
+% TODO: talk about all the techniques that we deemed inappropriate and WHY
+
+Robot localization has been studied for decades. Overall, the problem of localizing a mobile robot can be viewed as accurately measure the absolute distance to known landmarks, or by measuring the changes in position over time. We will henceforth refer to these two ideas as global and local pose estimation. Some of the high level techniques for robot localization are: measuring range at various points around the robot and matching these readings to a map, measuring time of flight or difference of time of arrival to calculate distance to known locations, recognizing landmarks in some modality and computing pose relative to those landmarks, and measuring changes in pose and accumulating these changes over time. There are different sensors that can be used for each of these techniques, such as laser range finders, ultrasonic, cameras, inertial measurement units (IMU), encoders, radio, visible light, and human-audible sound. Although there are a tremendous number of possible methods for robot localization, there are a select few which have received the most attention and shown the most success. These include:
 \begin{itemize}
     \item Lidar mapping
     \item Ultrasonic mappping
@@ -38,11 +42,17 @@ Many beacon systems use the speed difference between sound and electromagnetic w
 
 \section{Evaluation of Localization Techniques} \label{methods}
 
+Each of the techniques presented thus far have strengths and weaknesses, and it is unlikely that any one technique would be sufficient. This is the motivation for combining multiple techniques. To do so effectively, we compare each technique so as to mitigate the errors in any one technique. The five
+
+Optical flow gives us accurate angle measurements and fast updates that are relative to our current position. Like all camera based solutions, the vibration of the robot will likely makes this technique difficult. However, cameras are the most widely used sensor according to our survey of FRC students and alumni.
+The camera also doubles as a sensor for matrix tags, which give us accurate position estimates in the global frame. This is complemented by beacons, which update more slowly, but are not effected by occlusion and is robust to vibration.
+
 \section{Experimental Results} \label{experiments}
 
 **How did we test ArUco tags, IMUs, Optimal Flow. What results? Be specific. Include any relevant charts or equations.
 
-We demonstrated radio communication between two microcontrollers and tested the effect of distance and occlusion. The results can be seen in Figure \ref{fig:example}.
+We demonstrated radio communication between two microcontrollers and tested the effect of distance and occlusion. The results can be seen in Figure \ref{fig:example}{A Term Report}
+
 
 \begin{figure}
   \centering
@@ -63,7 +73,11 @@ Based on the extensive literature review and the few preliminary experiments we'
     \item Camera with matrix tags
 \end{enumerate}
 
-We have found examples of each of these techniques being used successfully, and in many cases have verified that they satisfy our criteria for accuracy, precision, update rate, and accessibility criteria. We are confident that any combination of these methods would work. Nonetheless, it is unreasonable to attempt to use all of these methods in the time frame of this project, and therefore we have decided to use beacons, optical flow, and matrix tags in our solution. Optical flow gives us accurate angle measurements and fast updates that are relative to our current position. The camera also doubles as a sensor for matrix tags, which give us accurate position estimates in the global frame. This is complemented by beacons, which update more slowly, but are not effected by occlusion and is robust to vibration.
+We have found examples of each of these techniques being used successfully, and in many cases have verified that they satisfy our criteria for accuracy, precision, update rate, and accessibility criteria. We are confident that any combination of these methods would work. Nonetheless, it is unreasonable to attempt to use all of these methods in the time frame of this project, and therefore we have decided to move forward with beacons, optical flow, and matrix tags. These techniques are complementary in their sources of error, and together we believe they will make a robust localization system.
+
+% TODO: explain the parts we know in detail, like the proposed beacon protocol
+
+% TODO: Setup appendix for things like the survey
 
 \bibliographystyle{plain}
 \bibliography{phil-mqp}
