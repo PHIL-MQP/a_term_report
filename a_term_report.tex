@@ -21,9 +21,7 @@ This report begins with a review of existing literature on indoor localization f
 
 \section{Related Work} \label{related_work}
 
-% TODO: talk about all the techniques that we deemed inappropriate and WHY
-
-Robot localization has been studied for decades. Overall, the problem of localizing a mobile robot can be viewed as accurately measure the absolute distance to known landmarks, or by measuring the changes in position over time. We will henceforth refer to these two ideas as global and local pose estimation. Some of the high level techniques for robot localization are: measuring range at various points around the robot and matching these readings to a map, measuring time of flight or difference of time of arrival to calculate distance to known locations, recognizing landmarks in some modality and computing pose relative to those landmarks, and measuring changes in pose and accumulating these changes over time. There are different sensors that can be used for each of these techniques, such as laser range finders, ultrasonic, cameras, inertial measurement units (IMU), encoders, radio, visible light, and human-audible sound. Although there are a tremendous number of possible methods for robot localization, there are a select few which have received the most attention and shown the most success. These include:
+Robot localization has been studied for decades. Overall, the problem of localizing a mobile robot can be viewed as accurately measure the absolute distance to known landmarks, or by measuring the changes in position over time. We will henceforth refer to these two ideas as global and local pose estimation. Some of the high level techniques for robot localization are: measuring range at various points around the robot and matching these readings to a map, measuring time of flight or difference of time of arrival to calculate distance to known locations, recognizing landmarks in some modality and computing pose relative to those landmarks, and measuring changes in pose and accumulating these changes over time. There are different sensors that can be used for each of these techniques, such as laser range finders, ultrasonic, cameras, inertial measurement units (IMU), encoders, radio, visible light, and human-audible sound. Although there are a tremendous number of possible methods for robot localization, there are a few which have received the most attention and shown the most success. These include:
 \begin{itemize}
     \item Lidar mapping
     \item Ultrasonic mappping
@@ -33,6 +31,8 @@ Robot localization has been studied for decades. Overall, the problem of localiz
     \item Optical flow mice and cameras
     \item Stereo vision and depth cameras
 \end{itemize}
+
+In our research, we learned how these seven techniques work and found descriptions and implementations in order to evaluate them. These descriptions and implementations are described in this section with the purpose of demonstrating a thorough literature review and of providing background information to the reader.
 
 **Here we will go over all the papers we read and sources we talked to. Explain what if any of our approach is novel and what is built on existing approaches.
 
