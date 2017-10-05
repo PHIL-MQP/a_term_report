@@ -2,6 +2,9 @@
 \usepackage[margin=1.5in]{geometry}
 \usepackage{float}
 \usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{amsmath}
 \usepackage{nameref}
 \usepackage{siunitx}
 \usepackage[utf8]{inputenc}
@@ -36,7 +39,7 @@ Robot localization has been studied for decades. Overall, the problem of localiz
 
 In our research, we learned how these seven techniques work and found descriptions and implementations in order to evaluate them. These descriptions and implementations are described in this section with the purpose of demonstrating a thorough literature review and of providing background information to the reader.
 
-An inertial measurement units (IMU) is a sensor reporting the forces acting upon an object, the angular rates of change, and surrounding magnetic field. The device typically comprises an accelerometer, gyroscope, and magnetometer which sense the above data respectively. These devices function by detecting Coriolis forces, inertial forces acting in the direction of motion relative to a rotating reference frame. These forces are proportional to the magnitude of the acceleration. These forces may be detected by a simple strain gauge mechanism or object vibrating at a know frequency ( the rate of change of vibration frequency is detected) \cite{THIS_REFERENCE_IS_ON_OTHER_COMPUTER_SAD_TIMES}. The premise behind position sensing using this device involves integrating the data with respect to time to calculate position and orientation. This approach was first used in aeronautics to estimate projectile attitude, orientation, and position \cite{agard_1989}. High cost IMU's have been used historically for defense and transportation systems; the quality of the sensor is high and the data is reliable in these applications. An inertial navigation system (INS) often comprises multiple accelerometers, gyroscopes, and magnetometers to estimate orientation and position. In cost-sensitive systems, this methodology is straightforward, but subject to high error rates from accumulation. Because of integration of accelerometer, the velocity error term grows linearly and position error quadratically. 
+An inertial measurement unit (IMU) is a sensor reporting the forces acting upon an object, the angular rates of change, and surrounding magnetic field. The device typically comprises an accelerometer, gyroscope, and magnetometer which sense the above data respectively. These devices function by detecting Coriolis forces, inertial forces acting in the direction of motion relative to a rotating reference frame. These forces are proportional to the magnitude of the acceleration. These forces may be detected by a simple strain gauge mechanism or object vibrating at a know frequency ( the rate of change of vibration frequency is detected) \cite{THIS_REFERENCE_IS_ON_OTHER_COMPUTER_SAD_TIMES}. The premise behind position sensing using this device involves integrating the data with respect to time to calculate position and orientation. This approach was first used in aeronautics to estimate projectile attitude, orientation, and position \cite{agard_1989}. High cost IMU's have been used historically for defense and transportation systems; the quality of the sensor is high and the data is reliable in these applications. An inertial navigation system (INS) often comprises multiple accelerometers, gyroscopes, and magnetometers to estimate orientation and position. In cost-sensitive systems, this methodology is straightforward, but subject to high error rates from accumulation. Because of integration of accelerometer, the velocity error term grows linearly and position error quadratically.
 
 Often, IMU data is continuously corrected using another sensor, such as an odometer or global positioning system. These sensors are subject to drift and bias.
 
@@ -70,6 +73,73 @@ Based on the extensive literature review and the few preliminary experiments we'
 
 We have found examples of each of these techniques being used successfully, and in many cases have verified that they satisfy our criteria for accuracy, precision, update rate, and accessibility criteria. We are confident that any combination of these methods would work. Nonetheless, it is unreasonable to attempt to use all of these methods in the time frame of this project, and therefore we have decided to move forward with beacons, optical flow, and matrix tags. These techniques are complementary in their sources of error, and together we believe they will make a robust localization system.
 
+\subsection{Proposed System Specification}
+Having decided on the sensing techinques we will use, we now describe our detailed system Specification. Ideally, the description in this section serves as the full plan for our implementation of the system during B Term, and most of the major design decisions have been made and clearly presented.
+
+\subsubsection{Radio and Ultrasonic Beacons}
+
+First, we consider how many beacons we will need. This will determined by costs and by ultrasonic or radio performance characteristics.
+
+\textbf{Format for Ultrasonic Signal} \\
+The ultrasonic signal should be designed to maximize both the distance it can be detected from and accuracy with which it's timing can be detected. Using a simple pulse of fixed frequency and amplitude is not ideal because it trades off energy transmitted (and thus distance) with accuracy. This is because a longer pulse contained more energy and can be detected from further, but at the same time the receiver cannot distinguish timing within the length of the pulse. Therefore, a chirp signal will be used. Compare the usual function relating amplitude to time of a sine wave to the quadtric chirp signal.
+$$ x(t) = A\cos(\omega t + \phi) $$
+$$ x(t) = A\cos\bigg(2\pi\Big(\tfrac{f_1 - f_0}{2T}t^2+f_0t\Big) + \phi\bigg) $$
+
+This function will generate a chirp with amplitude $A$, starting from frequency $f_0$ going to $f_1$ over time interval $T$. Figure \ref{fig:chirp} shows the specific waveform with the parameters we expect to use. This is a linear chirp signal because the instanteous frequency of the signal changes linearly with time.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[width=12cm,height=6cm]
+      \addplot[domain=-.0002:0,samples=10]{0};
+      \addplot[domain=0:0.001,samples=1000]{sin((2*180*((27000 - 20000)/(2*0.001)*x*x + 20000*x)))};
+      \addplot[domain=0.001:0.0012,samples=10]{0};
+    \end{axis}
+  \end{tikzpicture}
+  \label{fig:chirp}
+  \caption{Chirp signal with $\phi=0$, $A=1$, $f_0=\SI{20}{\kilo\hertz}$, $f_1=\SI{27}{\kilo\hertz}$, and $T=\SI{1}{\milli\second}$}
+\end{figure}
+
+This is the waveform we will be emitting from the ultrsonic sensors. The benefit is that it can be high power and still allow the receiver to determine precisely where in the waveform it is listening. To do this, one can take the discrete short time forier transform, which will show us how the power at various frequencies changes over time. By applying the FFT at a particular instant during the chirp, we can determine the position in time within the chirp of the current FFT. For instance, in the signal above if we apply and FFT at time $t_n=1.0$ and discover high power at frequency $f=\SI{22}{\kilo\hertz}$, we know that the chirp began at time $t_0 = t_n - \tfrac{f - f_0}{f_1 - f_0}T = 1.0 - \tfrac{22-20}{27-20}0.001 = 0.99857$. \\
+
+Our beacon system relies on accurately knowing the distance to a beacon, and therefore knowing exactly when the start of the signal left the transmitter and when the start of the signal arrived at the receiver. Figure \ref{fig:rx_tx_timing} shows the sources of delay we are accounting for. Using the procedure above, we can calculate when the start of the signal arrived at the transmitter for ultrasonic.
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    % timeline for ultrasonic
+    \draw (-1.5, 0) node {ULTRASONIC};
+    \filldraw (0,0) circle (0.05);
+    \draw (0.5, -0.2) node {\tiny TX Delay};
+    \draw (0,0) -- (1,0);
+    \filldraw (1,0) circle (0.05);
+    \draw (5.5, -0.2) node {\tiny Time of flight};
+    \draw (1,0) -- (10,0);
+    \filldraw (10,0) circle (0.05);
+    \draw (10.5, -0.2) node {\tiny RX Delay};
+    \draw (10,0) -- (11,0);
+    \filldraw (11,0) circle (0.05);
+
+    % timeline for radio
+    \draw (-1.5, 1) node {RADIO};
+    \filldraw (0,1) circle (0.05);
+    \draw (0.5, 1.2) node {\tiny TX Delay};
+    \draw (0,1) -- (1,1);
+    \filldraw (1,1) circle (0.05);
+    \draw (1.25, 0.8) node {\tiny Time of flight};
+    \draw (1,1) -- (1.5,1);
+    \filldraw (1.5,1) circle (0.05);
+    \draw (2.0, 1.2) node {\tiny RX Delay};
+    \draw (1.5,1) -- (2.5,1);
+    \filldraw (2.5,1) circle (0.05);
+  \end{tikzpicture}
+  \label{fig:rx_tx_timing}
+  \caption{Timing of radio and ultrasonic signals}
+\end{figure}
+
+\textbf{Path Loss} \\
+We calculate the free space path loss (FSPL) at the farthest distance from the beacons. For this calculation, we assume the worst case where the beacon is on the other side of the field, which is $\SI{16.5}{\meter}$ away.
+$$ \text{FSPL} = 20\log_{10}\Bigg(\frac{4\pi Rf^2}{c^2}\Bigg) = 20\log_{10}\Bigg(\frac{4\pi*16.5*\SI{433e6}{\hertz}}{\SI{3e8}{\meter\per\second}}\Bigg) = 49.521 $$
 % TODO: explain the parts we know in detail, like the proposed beacon protocol
 
 % TODO: Setup appendix for things like the survey
