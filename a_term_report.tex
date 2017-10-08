@@ -32,7 +32,7 @@ This report begins with a review of existing literature on indoor localization f
 Robot localization has been studied for decades. Overall, the problem of localizing a mobile robot can be viewed as accurately measure the absolute distance to known landmarks, or by measuring the changes in position over time. We will henceforth refer to these two ideas as global and local pose estimation. Some of the high level techniques for robot localization are: measuring range at various points around the robot and matching these readings to a map, measuring time of flight or difference of time of arrival to calculate distance to known locations, recognizing landmarks in some modality and computing pose relative to those landmarks, and measuring changes in pose and accumulating these changes over time. There are different sensors that can be used for each of these techniques, such as laser range finders, ultrasonic, cameras, inertial measurement units (IMU), encoders, radio, visible light, and human-audible sound. Although there are a tremendous number of possible methods for robot localization, there are a few which have received the most attention and shown the most success. These include:
 \begin{itemize}
     \item Lidar mapping
-    \item Ultrasonic mappping
+    \item Ultrasonic mapping
     \item IMU and Encoders fusion
     \item Infrared or Radio and Ultrasonic beacons
     \item cameras with visually identifiable tags
@@ -62,7 +62,7 @@ In cost-sensitive systems, this methodology is subject to high error rates from 
   \caption{A simple factor graph \cite{hwymeers_example}.}
 \end{figure}
 
-	Designed for the FIRST Robotics Challenge, frameworks such as Sensor Fusion 2 provide users with an algorithm for latency correction between IMU and camera data. Again, this algorithm uses known system parameters, such as update frequencies of sensors, frame transformations betweeen sensors, and data from landmarks for filtering and position estimation. Usually, the IMU data is available at a rate an order of magnitude larger than that of the camera. Additionally, the data is accurately timestamped and easily accessible to the vision processing thread. This way, the user receives an updated pose estimate without lag and has an history of the orientation. This is useful for trajectory planning or on-line path correction (like recovering from a collision). Within the next several years, systems like this will mature, offering localization or possibly SLAM.
+	Designed for the FIRST Robotics Challenge, frameworks such as Sensor Fusion 2 provide users with an algorithm for latency correction between IMU and camera data. Again, this algorithm uses known system parameters, such as update frequencies of sensors, frame transformations between sensors, and data from landmarks for filtering and position estimation. Usually, the IMU data is available at a rate an order of magnitude larger than that of the camera. Additionally, the data is accurately timestamped and easily accessible to the vision processing thread. This way, the user receives an updated pose estimate without lag and has an history of the orientation. This is useful for trajectory planning or on-line path correction (like recovering from a collision). Within the next several years, systems like this will mature, offering localization or possibly SLAM.
 
 Beacon systems have been used many times with success in the literature. Generally, these systems use ultrasound and or radio as a medium and either signal strength, phase shift, or time to measure distance to the beacons. Among radio systems, the system in \cite{bahl_radar:_2000} identified the location of people moving around buildings using signal strength in the 2.4gHz band received at three or more beacons, and they report accuracy of a few meters with an update rate of at most four times per second. The systems described in \cite{digiampaolo_mobile_2014} uses passive RFID tags on the ceiling and an RFID transmitter on the robot, and report an accuracy of 4\si{\centi\meter} within a 5\si{\square\meter}. Another RFID system \cite{saab_standalone_2011} also uses signal strength to RFID, and reports accuracies for various configurations ranging from 1\si{\centi\meter} to 3\si{\meter}. These RFID systems require readers that cost over \$500. There are also countless localization systems that use standard wireless networks. A comprehensive survey of these systems can be found in \cite{liu_survey_2007}. Systems that use signal strength in standard wireless LAN networks have achieved up to 10\si{\centi\meter} accuracy and hundreds of updates per second. Another radio beacon solution is to substitute single-frequency radio with Ultra-wideband radio. These systems can achieve centimeter level accuracy, but they use obscure or custom made transmitters and receivers that cost in the hundreds of dollars \cite{noauthor_dart_nodate} \cite{noauthor_pozyx_nodate}. Among ultrasonic beacon systems, \cite{kleeman_optimal_1992} uses the raw arrival times of ultrasonic pulses over time plus odometry together in a Kalman filter. Many beacon systems use the speed difference between sound and electromagnetic waves to measure system. Systems like \cite{smith_tracking_2004} \cite{ward_new_1997} \cite{kim_advanced_2008} send radio pulses followed by ultrasonic pulses. Nodes in the network us the difference in arrival time of these two signals to measure distance. Alternately, some systems use infrared pulses in place of radio \cite{ghidary_new_1999} \cite{yucel_development_2012}. These systems are inexpensive, and report accuracy of between 2 and 14\si{\centi\meter}.
 
@@ -81,11 +81,15 @@ The camera also doubles as a sensor for matrix tags, which give us accurate posi
 
 We demonstrated radio communication between two microcontrollers and tested the effect of distance and occlusion.
 
+\subsection{Measuring Beacon Delays}
+
+The beacon system relies on measuring the time it takes for a sound signal to travel from the beacons to the robot. To do this accurately, one must account for transmit and receive delays in addition to the actual time of flight. Figure \ref{fig:rx_tx_timing} illustrates the various delays we need to account for. We conducted experiments to get initial estimates of these delays. First, to get an estimate of the radio transmit receive delay, a transmitter and receiver were set up on two microcontrollers. The transmitter sent \SI{5}{\milli\second} pulses of radio energy (no encoded data) every \SI{55}{\milli\second}, and oscilloscope probes were attached to the input pin on the transmitter and the output pin on the receiver. By comparing the time difference between the input and output signals on the oscilloscope, we can determine the total time. Furthermore, we can measure the distance between the transmitter and receiver and subtract from the total time the theoretical time of flight of the radio signal. The full data for these measurements are available in \nameref{appendix:rf-rx-tx}. The time of flight of radio over distances of a new centimeters or meters is on the order of nanoseconds. We measured  an average delay of \SI{45.175}{\micro\second}, which we attribute to the internal circuitry of the transmitter and receiver. The variance of this delay was \SI{16}{\micro\second}. Assuming this delays follows a normal distribution , it would be perfectly reasonable for us to encounter a
+
 \section{System Specification} \label{specs}
 
 \subsection{Design Criteria}
 
-Here we present our goals andthe criteria our system must meet in order to be successful. Broadly, we consider the following factors to be those which are important to the success of our system.
+Here we present our goals and the criteria our system must meet in order to be successful. Broadly, we consider the following factors to be those which are important to the success of our system.
 \begin{enumerate}
   \item \textbf{Accuracy}\\ how close our position estamates are to ground truth.
   \item \textbf{Precision}\\ how close our position estimates are to each other given the same ground truth.
@@ -93,7 +97,7 @@ Here we present our goals andthe criteria our system must meet in order to be su
   \item \textbf{Accessibility}\\ how affordable is our system, how difficult is it to make, and how easy is it for teams to use.
 \end{enumerate}
 
-To come up with hard numbers for these criteria, we first performed a few simple calcuations based on our knowledge of FRC. First, we consider what teams would want to use position information for, and decided that the applications requiring the most accuracy are shooting and autonomous pick of game pieces at known locations. Both of these require the position estamates to be close to the true position of the robot. From there, we know that most FRC shooting and pickup mechanisms will work within $\pm$\SI{10}{\centi\meter}. Next, we decided the application requiring the most precision would be path following. If position estimates are imprecise and jump around rapidly, smooth path following will be difficult. From our experience with path following, we estimated that $\pm$\SI{5}{\centi\meter} would be sufficient. For update rate, we considered what the maximum distance a robot could move within a period and used that to decide what our update rate should be. The very fastest FRC robots move \SI{6}{\meter\per\second}, which at an update rate of every \SI{20}{\milli\second} is a distance of $0.02*6 =$ \SI{0.12}{\meter}. The rate of \SI{20}{\milli\second} is a realistic cycle time in FRC, and we feel \SI{12}{\centi\meter} is sufficient given the speed. For accessibility, we acknowledged that teams cannot spend more than \$400 on any part, and that most times source parts from websites AndyMark, Cross-the-road Electronics, and National Instruments among other suppliers. We are also conscious that many FRC teams have limited or cluttered spaces for testing their robots, and may be working in a shared space that must be clean and usable after their work sessions.
+To come up with hard numbers for these criteria, we first performed a few simple calculations based on our knowledge of FRC. First, we consider what teams would want to use position information for, and decided that the applications requiring the most accuracy are shooting and autonomous pick of game pieces at known locations. Both of these require the position estimates to be close to the true position of the robot. From there, we know that most FRC shooting and pickup mechanisms will work within $\pm$\SI{10}{\centi\meter}. Next, we decided the application requiring the most precision would be path following. If position estimates are imprecise and jump around rapidly, smooth path following will be difficult. From our experience with path following, we estimated that $\pm$\SI{5}{\centi\meter} would be sufficient. For update rate, we considered what the maximum distance a robot could move within a period and used that to decide what our update rate should be. The very fastest FRC robots move \SI{6}{\meter\per\second}, which at an update rate of every \SI{20}{\milli\second} is a distance of $0.02*6 =$ \SI{0.12}{\meter}. The rate of \SI{20}{\milli\second} is a realistic cycle time in FRC, and we feel \SI{12}{\centi\meter} is sufficient given the speed. For accessibility, we acknowledged that teams cannot spend more than \$400 on any part, and that most times source parts from websites AndyMark, Cross-the-road Electronics, and National Instruments among other suppliers. We are also conscious that many FRC teams have limited or cluttered spaces for testing their robots, and may be working in a shared space that must be clean and usable after their work sessions.
 
 Using all of these informal estimates as a starting point, we conducted a survey of FRC students, Alumni, and mentors. We received 65 responses in total, and used the results of this survey to solidify our design criteria. The full response of this survey are presented in \nameref{appendix:survey}. In summary, the median for accuracy was \SI{10}{\centi\meter} in x,y and \ang{5} in yaw. Our survey did not include questions about precision and update rate, because they depend on what position is used for. Instead, we asked if students would try path planning if they had a localization system, which would back up our estimate of precision. Our survey indicated that 90\% of students would try to make the robot autonomously follow paths. Therefore, our precision estiamted based on path planning as an application is supported by our survey. Update rate was not addressed in the survey because we didn't think FRC studens would have informed opinions on this metric. Finally, we asked several questions about the accessibility requirements. A cost of under \$200 was deemed acceptable by 84.6\% of responses, and so we have made \$200 our goal for cost. Furthermore, we learned that the amount of space in teams shops varies from a 5 by 5 foot space up to several thousand square feet, but the median shop size is 775 $ft^2$, which one can imagine as a 25 by 30 ft space. In terms of access, about 76.5\% of teams could leave up tags or beacons, with the others stating that they must clean up everything because they work in a shared space such as a classroom. Lastly, we asked students what sensors they were familiar with. The most familiar sensors were cameras (90\%), followed by encoders (84.6\%), then IMUs (60\%). Therefore, it would be benefitial to incorporate cameras, encoders, and IMUs because teams are already familiar with them.
 
@@ -114,18 +118,18 @@ Based on the extensive literature review, the few preliminary experiments we've 
 We have found examples of each of these techniques being used successfully, and in many cases have verified that they satisfy our criteria for accuracy, precision, update rate, and accessibility criteria. We are confident that any combination of these methods would work. Nonetheless, it is unreasonable to attempt to use all of these methods in the time frame of this project, and therefore we have decided to move forward with beacons, optical flow, and matrix tags. These techniques are complementary in their sources of error, and together we believe they will make a robust localization system.
 
 \subsection{Implemenation Details}
-Having decided on the sensing techinques we will use, we now describe our detailed system Specification. Ideally, the description in this section serves as the full plan for our implementation of the system during B Term, and most of the major design decisions have been made and clearly presented.
+Having decided on the sensing techniques we will use, we now describe our detailed system Specification. Ideally, the description in this section serves as the full plan for our implementation of the system during B Term, and most of the major design decisions have been made and clearly presented.
 
 \subsubsection{Radio and Ultrasonic Beacons}
 
 First, we consider how many beacons we will need. This will determined by costs and by ultrasonic or radio performance characteristics.
 
 \textbf{Format for Ultrasonic Signal} \\
-The ultrasonic signal should be designed to maximize both the distance it can be detected from and accuracy with which it's timing can be detected. Using a simple pulse of fixed frequency and amplitude is not ideal because it trades off energy transmitted (and thus distance) with accuracy. This is because a longer pulse contained more energy and can be detected from further, but at the same time the receiver cannot distinguish timing within the length of the pulse. Therefore, a chirp signal will be used. Compare the usual function relating amplitude to time of a sine wave to the quadtric chirp signal.
+The ultrasonic signal should be designed to maximize both the distance it can be detected from and accuracy with which it's timing can be detected. Using a simple pulse of fixed frequency and amplitude is not ideal because it trades off energy transmitted (and thus distance) with accuracy. This is because a longer pulse contained more energy and can be detected from further, but at the same time the receiver cannot distinguish timing within the length of the pulse. Therefore, a chirp signal will be used. Compare the usual function relating amplitude to time of a sine wave to the quadratic chirp signal.
 $$ x(t) = A\cos(\omega t + \phi) $$
 $$ x(t) = A\cos\bigg(2\pi\Big(\tfrac{f_1 - f_0}{2T}t^2+f_0t\Big) + \phi\bigg) $$
 
-This function will generate a chirp with amplitude $A$, starting from frequency $f_0$ going to $f_1$ over time interval $T$. Figure \ref{fig:chirp} shows the specific waveform with the parameters we expect to use. This is a linear chirp signal because the instanteous frequency of the signal changes linearly with time.
+This function will generate a chirp with amplitude $A$, starting from frequency $f_0$ going to $f_1$ over time interval $T$. Figure \ref{fig:chirp} shows the specific waveform with the parameters we expect to use. This is a linear chirp signal because the instantaneous frequency of the signal changes linearly with time.
 
 \begin{figure}[H]
   \centering
@@ -140,9 +144,9 @@ This function will generate a chirp with amplitude $A$, starting from frequency 
   \caption{Chirp signal with $\phi=0$, $A=1$, $f_0=\SI{20}{\kilo\hertz}$, $f_1=\SI{27}{\kilo\hertz}$, and $T=\SI{1}{\milli\second}$}
 \end{figure}
 
-This is the waveform we will be emitting from the ultrsonic sensors. The benefit is that it can be high power and still allow the receiver to determine precisely where in the waveform it is listening. To do this, one can take the discrete short time forier transform, which will show us how the power at various frequencies changes over time. By applying the FFT at a particular instant during the chirp, we can determine the position in time within the chirp of the current FFT. For instance, in the signal above if we apply and FFT at time $t_n=1.0$ and discover high power at frequency $f=\SI{22}{\kilo\hertz}$, we know that the chirp began at time $t_0 = t_n - \tfrac{f - f_0}{f_1 - f_0}T = 1.0 - \tfrac{22-20}{27-20}0.001 = 0.99857$. \\
+This is the waveform we will be emitting from the ultrasonic sensors. The benefit is that it can be high power and still allow the receiver to determine precisely where in the waveform it is listening. One method for doing this is to take the discrete short time Fourier transform, which will show us how the power at various frequencies changes over time. By applying the FFT at a particular instant during the chirp, we can determine the position in time within the chirp of the current FFT. For instance, in the signal above if we apply and FFT at time $t_n=1.0$ and discover high power at frequency $f=\SI{22}{\kilo\hertz}$, we know that the chirp began at time $t_0 = t_n - \tfrac{f - f_0}{f_1 - f_0}T = 1.0 - \tfrac{22-20}{27-20}0.001 = 0.99857$. Another simpler strategy is to slide the waveform you expect to hear across samples of recorded raw input and check for the point of highest correlation. In other words, slide the waveform in figure \ref{fig:chirp} and match it to the received signal. Both of these techniques are used in practice, and we are considering both in our implementation. \cmmnt{what are the pros and cons}
 
-Our beacon system relies on accurately knowing the distance to a beacon, and therefore knowing exactly when the start of the signal left the transmitter and when the start of the signal arrived at the receiver. Figure \ref{fig:rx_tx_timing} shows the sources of delay we are accounting for. Using the procedure above, we can calculate when the start of the signal arrived at the transmitter for ultrasonic.
+Our beacon system relies on accurately knowing the distance to a beacon, and therefore knowing exactly when the start of the signal left the transmitter and when the start of the signal arrived at the receiver. Figure \ref{fig:rx_tx_timing} shows the sources of delay we are accounting for, and we describe our methodology for measuring these delays in the \nameref{experiments} section.
 
 \begin{figure}
   \centering
@@ -186,10 +190,10 @@ $$ \text{FSPL} = 20\log_{10}\Bigg(\frac{4\pi Rf^2}{c^2}\Bigg) = 20\log_{10}\Bigg
 
 \section{Conclusion} \label{conclusion}
 
-\section{Appenix}
+\section{Appendix}
 \subsection{Appendix A}\label{appendix:survey}
 
-  Survery Responses
+  Survey Responses
 
   \begin{figure}[H]
     \centering
@@ -209,6 +213,32 @@ $$ \text{FSPL} = 20\log_{10}\Bigg(\frac{4\pi Rf^2}{c^2}\Bigg) = 20\log_{10}\Bigg
     \label{fig:survey_worth}
   \end{figure}
 
+\subsection{Appendix B}\label{appendix:rf-rx-tx}
+
+\begin{table}[H]
+  \begin{tabular}{|l|l|l|l|l|}
+    \hline
+    Measured Distance (m) & \multicolumn{3}{l|}{Measured Total Time (\mu s)} & Average Delay (\mu s) \\
+    \hline
+    0.0630 & 45.44 & 42.80 & 34.48 & 40.90646 \\
+    0.1425 & 52.72 & 50.48 & 52.09 & 51.76286 \\
+    0.1505 & 64.16 & 63.36 & 60.24 & 62.58616 \\
+    0.2210 & 40.33 & 36.79 & 36.40 & 37.83926 \\
+    0.2415 & 49.52 & 45.76 & 43.92 & 46.39919 \\
+    0.2460 & 47.47 & 53.84 & 44.71 & 48.67251 \\
+    0.2965 & 34.36 & 34.00 & 43.76 & 37.37234 \\
+    0.3085 & 79.36 & 62.16 & 59.52 & 67.01230 \\
+    0.3390 & 39.92 & 57.27 & 38.96 & 45.38220 \\
+    0.3770 & 41.75 & 40.75 & 45.53 & 42.67541 \\
+    0.3600 & 38.40 & 38.40 & 37.68 & 38.15880 \\
+    0.0070 & 35.60 & 36.08 & 34.32 & 35.33331 \\
+    \hline
+    \multicolumn{4}{|l}{Overall Average Delay (\mu s)} & 46.175 \\
+    \hline
+  \end{tabular}
+  \caption{The time of flight of radio over tens of centimeters is insignificant compared to the delay within the transmitter and receiver.}
+  \label{table:rf-rx-tx}
+\end{table}
 
 \bibliographystyle{plain}
 \bibliography{phil-mqp}
