@@ -57,7 +57,7 @@ In cost-sensitive systems, this methodology is subject to high error rates from 
 \begin{figure}[H]
   \centering
   \scalebox{.4}{
-  \includegraphics[width=1\linewidth]{./Factorgraph.jpg}}
+  \includegraphics[width=1\linewidth]{./images/Factorgraph.jpg}}
   \label{fig:ex_factor_graph}
   \caption{A simple factor graph \cite{hwymeers_example}.}
 \end{figure}
@@ -83,7 +83,8 @@ We demonstrated radio communication between two microcontrollers and tested the 
 
 \subsection{Measuring Beacon Delays}
 
-The beacon system relies on measuring the time it takes for a sound signal to travel from the beacons to the robot. To do this accurately, one must account for transmit and receive delays in addition to the actual time of flight. Figure \ref{fig:rx_tx_timing} illustrates the various delays we need to account for. We conducted experiments to get initial estimates of these delays. First, to get an estimate of the radio transmit receive delay, a transmitter and receiver were set up on two microcontrollers. The transmitter sent \SI{5}{\milli\second} pulses of radio energy (no encoded data) every \SI{55}{\milli\second}, and oscilloscope probes were attached to the input pin on the transmitter and the output pin on the receiver. By comparing the time difference between the input and output signals on the oscilloscope, we can determine the total time. Furthermore, we can measure the distance between the transmitter and receiver and subtract from the total time the theoretical time of flight of the radio signal. The full data for these measurements are available in \nameref{appendix:rf-rx-tx}. The time of flight of radio over distances of a new centimeters or meters is on the order of nanoseconds. We measured  an average delay of \SI{45.175}{\micro\second}, which we attribute to the internal circuitry of the transmitter and receiver. The variance of this delay was \SI{16}{\micro\second}. Assuming this delays follows a normal distribution , it would be perfectly reasonable for us to encounter a
+The beacon system relies on measuring the time it takes for a sound signal to travel from the beacons to the robot. To do this accurately, one must account for transmit and receive delays in addition to the actual time of flight. Figure \ref{fig:rx_tx_timing} illustrates the various delays we need to account for. We conducted experiments to get initial estimates of these delays. First, to get an estimate of the radio transmit receive delay, a transmitter and receiver were set up on two microcontrollers. The transmitter sent \SI{5}{\milli\second} pulses of radio energy (no encoded data) every \SI{55}{\milli\second}, and oscilloscope probes were attached to the input pin on the transmitter and the output pin on the receiver. By comparing the time difference between the input and output signals on the oscilloscope, we can determine the total time. Furthermore, we can measure the distance between the transmitter and receiver and subtract from the total time the theoretical time of flight of the radio signal. The full data for these measurements are available in \nameref{appendix:rf-rx-tx}. The time of flight of radio over distances of a new centimeters or meters is on the order of nanoseconds. We measured  an average delay of \SI{45.175}{\micro\second}, which we attribute to the internal circuitry of the transmitter and receiver. The variance of this delay was \SI{16}{\micro\second}. However, we also measured delays as low as \SI{32}{\micro\second} and as high as \SI{79}{\micro\second}. Since the theoretical time of flight over the distances used in this experiment were at most \SI{1}{\nano\second}, we can conclude that there is both delay and significant variance in the delay of the transmitters and receivers. This information will be used to better model the timing of our beacons to make the system as accurate as possible.
+Next we performed a similar experiment with the ultrasonic transducers. For this experiment, we used two NTX-1004PZ piezo tweeters placed \SI{25}{\centi\meter} apart. One was connected to a PSoC 5LP for transmitting, and the other was connected only to the oscilloscope. The other oscilloscope prove was connected to the transmitting piezo. The time difference between the transmitting signal on and the receiving signal was measured. The signal applied to the transmitter was short bursts of a 27kHz square wave. The bursts were produced by a 500Hz PWM signal with ???\% duty cycle. The received signal, as viewed on the oscilloscope, contained a 7kHz signal with about \SI{50}{\milli\volt} peak-to-peak. This makes no sense.
 
 \section{System Specification} \label{specs}
 
@@ -197,19 +198,19 @@ $$ \text{FSPL} = 20\log_{10}\Bigg(\frac{4\pi Rf^2}{c^2}\Bigg) = 20\log_{10}\Bigg
 
   \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{./survey_angle.png}
+    \includegraphics[width=1\linewidth]{./images/survey_angle.png}
     \label{fig:survey_angle}
   \end{figure}
 
   \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{./survey_position.png}
+    \includegraphics[width=1\linewidth]{./images/survey_position.png}
     \label{fig:survey_position}
   \end{figure}
 
   \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{./survey_worth.png}
+    \includegraphics[width=1\linewidth]{./images/survey_worth.png}
     \label{fig:survey_worth}
   \end{figure}
 
