@@ -136,7 +136,6 @@
         \label{fig:frequency_response}
       \end{figure}
 
-
 \section{System Specification} \label{specs}
 
   \subsection{Design Criteria}
@@ -173,136 +172,140 @@
 
     Having decided on the sensing techniques we will use, we now describe our detailed system Specification. Ideally, the description in this section serves as the full plan for our implementation of the system during B Term, and most of the major design decisions have been made and clearly presented.
 
-  \subsubsection{Radio and Ultrasonic Beacons}
+    \subsubsection{Radio and Ultrasonic Beacons}
 
-    First, we consider how many beacons we will need. This will determined by costs and by ultrasonic or radio performance characteristics.
+      Important implementation details of the beacon system include the number of beacons needed, the radio communications protocol, and the ultrasonic signal format. The number of beacons can either be picked to minimize cost, and then the beacons can be designed to meet this criteria, or the characteristics of the beacons can be determined and the number of beacons needed derived from that. In order to support arbitrary practice areas, the second method is preferred. In this section we cover relevant calculations and possible implementation details for beacons.
 
-    \textbf{Format for Ultrasonic Signal} \\
-    The ultrasonic signal should be designed to maximize both the distance it can be detected from and accuracy with which it's timing can be detected. Using a simple pulse of fixed frequency and amplitude is not ideal because it trades off energy transmitted (and thus distance) with accuracy. This is because a longer pulse contained more energy and can be detected from further, but at the same time the receiver cannot distinguish timing within the length of the pulse. Therefore, a chirp signal will be used. Compare the usual function relating amplitude to time of a sine wave to the quadratic chirp signal.
-    $$ x(t) = A\cos(\omega t + \phi) $$
-    $$ x(t) = A\cos\bigg(2\pi\Big(\tfrac{f_1 - f_0}{2T}t^2+f_0t\Big) + \phi\bigg) $$
+      \textbf{Format for Ultrasonic Signal} \\
+      The ultrasonic signal should be designed to maximize both the distance it can be detected from and accuracy with which it's timing can be detected. Using a simple pulse of fixed frequency and amplitude is not ideal because it trades off energy transmitted (and thus distance) with accuracy. This is because a longer pulse contained more energy and can be detected from further, but at the same time the receiver cannot distinguish timing within the length of the pulse. Therefore, a chirp signal will be used. Compare the usual function relating amplitude to time of a sine wave to the quadratic chirp signal.
+      $$ x(t) = A\cos(\omega t + \phi) $$
+      $$ x(t) = A\cos\bigg(2\pi\Big(\tfrac{f_1 - f_0}{2T}t^2+f_0t\Big) + \phi\bigg) $$
 
-    This function will generate a chirp with amplitude $A$, starting from frequency $f_0$ going to $f_1$ over time interval $T$. Figure \ref{fig:chirp} shows the specific waveform with the parameters we expect to use. This is a linear chirp signal because the instantaneous frequency of the signal changes linearly with time.
+      This function will generate a chirp with amplitude $A$, starting from frequency $f_0$ going to $f_1$ over time interval $T$. Figure \ref{fig:chirp} shows the specific waveform with the parameters we expect to use. This is a linear chirp signal because the instantaneous frequency of the signal changes linearly with time.
 
-    \begin{figure}[H]
-      \centering
-      \begin{tikzpicture}
-        \begin{axis}[width=12cm,height=6cm]
-          \addplot[domain=-.0002:0,samples=10]{0};
-          \addplot[domain=0:0.001,samples=1000]{sin((2*180*((27000 - 20000)/(2*0.001)*x*x + 20000*x)))};
-          \addplot[domain=0.001:0.0012,samples=10]{0};
-        \end{axis}
-      \end{tikzpicture}
-      \label{fig:chirp}
-      \caption{Chirp signal with $\phi=0$, $A=1$, $f_0=\SI{20}{\kilo\hertz}$, $f_1=\SI{27}{\kilo\hertz}$, and $T=\SI{1}{\milli\second}$}
-    \end{figure}
+      \begin{figure}[H]
+        \centering
+        \begin{tikzpicture}
+          \begin{axis}[width=12cm,height=6cm]
+            \addplot[domain=-.0002:0,samples=10]{0};
+            \addplot[domain=0:0.001,samples=1000]{sin((2*180*((27000 - 20000)/(2*0.001)*x*x + 20000*x)))};
+            \addplot[domain=0.001:0.0012,samples=10]{0};
+          \end{axis}
+        \end{tikzpicture}
+        \label{fig:chirp}
+        \caption{Chirp signal with $\phi=0$, $A=1$, $f_0=\SI{20}{\kilo\hertz}$, $f_1=\SI{27}{\kilo\hertz}$, and $T=\SI{1}{\milli\second}$}
+      \end{figure}
 
-      This is the waveform we will be emitting from the ultrasonic sensors. The benefit is that it can be high power and still allow the receiver to determine precisely where in the waveform it is listening. One method for doing this is to take the discrete short time Fourier transform, which will show us how the power at various frequencies changes over time. By applying the FFT at a particular instant during the chirp, we can determine the position in time within the chirp of the current FFT. For instance, in the signal above if we apply and FFT at time $t_n=1.0$ and discover high power at frequency $f=\SI{22}{\kilo\hertz}$, we know that the chirp began at time $t_0 = t_n - \tfrac{f - f_0}{f_1 - f_0}T = 1.0 - \tfrac{22-20}{27-20}0.001 = 0.99857$. Another simpler strategy is to slide the waveform you expect to hear across samples of recorded raw input and check for the point of highest correlation. In other words, slide the waveform in figure \ref{fig:chirp} and match it to the received signal. Both of these techniques are used in practice, and we are considering both in our implementation. \cmmnt{what are the pros and cons}
+        This is the waveform we will be emitting from the ultrasonic sensors. The benefit is that it can be high power and still allow the receiver to determine precisely where in the waveform it is listening. One method for doing this is to take the discrete short time Fourier transform, which will show us how the power at various frequencies changes over time. By applying the FFT at a particular instant during the chirp, we can determine the position in time within the chirp of the current FFT. For instance, in the signal above if we apply and FFT at time $t_n=1.0$ and discover high power at frequency $f=\SI{22}{\kilo\hertz}$, we know that the chirp began at time $t_0 = t_n - \tfrac{f - f_0}{f_1 - f_0}T = 1.0 - \tfrac{22-20}{27-20}0.001 = 0.99857$. Another simpler strategy is to slide the waveform you expect to hear across samples of recorded raw input and check for the point of highest correlation. In other words, slide the waveform in figure \ref{fig:chirp} and match it to the received signal. Both of these techniques are used in practice, and we are considering both in our implementation. \cmmnt{what are the pros and cons}
 
-      Our beacon system relies on accurately knowing the distance to a beacon, and therefore knowing exactly when the start of the signal left the transmitter and when the start of the signal arrived at the receiver. Figure \ref{fig:rx_tx_timing} shows the sources of delay we are accounting for, and we describe our methodology for measuring these delays in the \nameref{experiments} section.
+        Our beacon system relies on accurately knowing the distance to a beacon, and therefore knowing exactly when the start of the signal left the transmitter and when the start of the signal arrived at the receiver. Figure \ref{fig:rx_tx_timing} shows the sources of delay we are accounting for, and we describe our methodology for measuring these delays in the \nameref{experiments} section.
 
-    \begin{figure}
-      \centering
-      \begin{tikzpicture}
-        % timeline for ultrasonic
-        \draw (-1.5, 0) node {ULTRASONIC};
-        \filldraw (0,0) circle (0.05);
-        \draw (0.5, -0.2) node {\tiny TX Delay};
-        \draw (0,0) -- (1,0);
-        \filldraw (1,0) circle (0.05);
-        \draw (5.5, -0.2) node {\tiny Time of flight};
-        \draw (1,0) -- (10,0);
-        \filldraw (10,0) circle (0.05);
-        \draw (10.5, -0.2) node {\tiny RX Delay};
-        \draw (10,0) -- (11,0);
-        \filldraw (11,0) circle (0.05);
+      \begin{figure}
+        \centering
+        \begin{tikzpicture}
+          % timeline for ultrasonic
+          \draw (-1.5, 0) node {ULTRASONIC};
+          \filldraw (0,0) circle (0.05);
+          \draw (0.5, -0.2) node {\tiny TX Delay};
+          \draw (0,0) -- (1,0);
+          \filldraw (1,0) circle (0.05);
+          \draw (5.5, -0.2) node {\tiny Time of flight};
+          \draw (1,0) -- (10,0);
+          \filldraw (10,0) circle (0.05);
+          \draw (10.5, -0.2) node {\tiny RX Delay};
+          \draw (10,0) -- (11,0);
+          \filldraw (11,0) circle (0.05);
 
-        % timeline for radio
-        \draw (-1.5, 1) node {RADIO};
-        \filldraw (0,1) circle (0.05);
-        \draw (0.5, 1.2) node {\tiny TX Delay};
-        \draw (0,1) -- (1,1);
-        \filldraw (1,1) circle (0.05);
-        \draw (1.25, 0.8) node {\tiny Time of flight};
-        \draw (1,1) -- (1.5,1);
-        \filldraw (1.5,1) circle (0.05);
-        \draw (2.0, 1.2) node {\tiny RX Delay};
-        \draw (1.5,1) -- (2.5,1);
-        \filldraw (2.5,1) circle (0.05);
-      \end{tikzpicture}
-      \label{fig:rx_tx_timing}
-      \caption{Timing of radio and ultrasonic signals. Experiments indicate \SI{46.175}{\micro\second} total RF delay and \SI{1}{\milli\second} total ultrasonic delay.}
-    \end{figure}
+          % timeline for radio
+          \draw (-1.5, 1) node {RADIO};
+          \filldraw (0,1) circle (0.05);
+          \draw (0.5, 1.2) node {\tiny TX Delay};
+          \draw (0,1) -- (1,1);
+          \filldraw (1,1) circle (0.05);
+          \draw (1.25, 0.8) node {\tiny Time of flight};
+          \draw (1,1) -- (1.5,1);
+          \filldraw (1.5,1) circle (0.05);
+          \draw (2.0, 1.2) node {\tiny RX Delay};
+          \draw (1.5,1) -- (2.5,1);
+          \filldraw (2.5,1) circle (0.05);
+        \end{tikzpicture}
+        \label{fig:rx_tx_timing}
+        \caption{Timing of radio and ultrasonic signals. Experiments indicate \SI{46.175}{\micro\second} total RF delay and \SI{1}{\milli\second} total ultrasonic delay.}
+      \end{figure}
 
-    \textbf{Path Loss} \\
-    We calculate the free space path loss (FSPL) at the farthest distance from the beacons. For this calculation, we assume the worst case where the beacon is on the other side of the length field, which is $\SI{16.5}{\meter}$ away. Over the more realistic distance of half the width of the field (\SI{5.6}{\meter}), the path loss is only \SI{40}{\decibel}.
-    $$ \text{FSPL} = 20\log_{10}\Bigg(\frac{4\pi Rf^2}{c^2}\Bigg) = 20\log_{10}\Bigg(\frac{4\pi*16.5*\SI{433e6}{\hertz}}{\SI{3e8}{\meter\per\second}}\Bigg) = 49.521 $$
+      \textbf{Path Loss} \\
+      We calculate the free space path loss (FSPL) of the radio signals at the farthest distance from the beacons. For this calculation, we assume the worst case where the beacon is on the other side of the length field, which is $\SI{16.5}{\meter}$ away. Over the more realistic distance of half the width of the field (\SI{5.6}{\meter}), the path loss is only \SI{40}{\decibel}. %The XY-MK-5V receiver module which we will be using has a sensitivity of \SI{105}{\decibel}, so this calculation suggests that they should work for our application. Our empirical testing has also confirmed they also work in practice.
+      $$ \text{FSPL} = 20\log_{10}\Bigg(\frac{4\pi Rf^2}{c^2}\Bigg) = 20\log_{10}\Bigg(\frac{4\pi*16.5*\SI{433e6}{\hertz}}{\SI{3e8}{\meter\per\second}}\Bigg) = 49.521 $$
 
-    \begin{table}
-      \label{table:beacon_bom}
-      \begin{tabular}{|l|l|}
-        \hline
-        Item & Cost per Beacon \\
-        \hline
-        PSoc 5LP & \$10.00 \\
-        RF Tx/Rx Pair & \$1.68 \\
-        piezo speaker & \$1.65 \\
-        9v battery & \$1.19 \\
-        battery connector & \$0.54 \\
-        LCD display & \$3.90 (optional) \\
-        resistors and capacitors & \$5.00 (estimate) \\
-        prototyping board & \$5.00 (estimate) \\
-        \hline
-        Total & 28.96 \\
-        \hline
-      \end{tabular}
-      \caption{estimated bill of material for beacons}
-    \end{table}
+      \begin{table}
+        \label{table:beacon_bom}
+        \begin{tabular}{|l|l|}
+          \hline
+          Item & Cost per Beacon \\
+          \hline
+          PSoc 5LP & \$10.00 \\
+          RF Tx/Rx Pair & \$1.68 \\
+          piezo speaker & \$1.65 \\
+          9v battery & \$1.19 \\
+          battery connector & \$0.54 \\
+          LCD display & \$3.90 (optional) \\
+          resistors and capacitors & \$5.00 (estimate) \\
+          prototyping board & \$5.00 (estimate) \\
+          \hline
+          Total & 28.96 \\
+          \hline
+        \end{tabular}
+        \caption{estimated bill of material for beacons}
+      \end{table}
 
-    \subsection{Timeline and Goals}
+      \textbf{Self-Localization of Beacons} \\
 
-      To maximize the likelihood that our project is complete in timely manner and with rigorous methodology, we have drafted a set of goals and a timeline to help us manage our time. Below we present our set of \textit{must} goals, which we have agreed are all required for our project to be a success (in no particular order).
+      \textbf{Number of beacons needed} \\
+      The number of beacons can be decided once the range and beam pattern of the beacons is known. To do this, a rigorous test that measures the sound level at various angles and distance will be performed. Once this is known, we can offer a tool or set of steps to determine how many beacons are needed and where beacons should be placed.
 
+  \subsection{Timeline and Goals}
+
+    To maximize the likelihood that our project is complete in timely manner and with rigorous methodology, we have drafted a set of goals and a timeline to help us manage our time. Below we present our set of \textit{must} goals, which we have agreed are all required for our project to be a success (in no particular order).
+
+    \begin{itemize}
+      \item Support 4 wheel differential drive robots moving at continuous driving speeds of up to \SI{3}{\meter\per\second}
+      \item Support the NavX and do complementary and basic Kalman filtering
+      \item Differentiate between tags with the camera and measure pose relative to them with a standard 720p webcam.
+      \item Beacons provide global position updates.
+      \item Use the out of the box OpenCV API to get x and y translation between frames
+      \item Provide a GUI for specifying the configuration of the sensors on the robot and the configuration of the field or practice space.
+      \item Accurately describe the conditions under which camera localization will work, especially with respect to jitter and occlusion.
+      \item Support getting the position from each subsystem individually
+      \item Support getting one fused position update
+      \item Specify what kinds of sensor mounting configurations are supported
+      \item Specify which of the subsystems are necessary and which are optional (encoders are necessary, IMUs are optional)
+      \item Provide the designs and the code for the beacons, such that teams do not need to edit the code. Any constants are in a configuration file.
+      \item Must Provide the optimal analysis or coverage of an empty FRC field and the 2018 field
+      \item Must Provide the methodology for finding the optimal placement of tags and beacons for other shape fields (describe what we did to get part 6.g.i)
+      \item Must fail gracefully when some of the sensing techniques are unreliable or failing
+    \end{itemize}
+
+    These goals will hopefully constrain the scope of each localization technique such that all of them can be incorporated to some degree. Furthermore, we have drafted a timeline of which of these goals we will focus on over the course of the year. For example, by choosing to start with encoders, IMUs, and cameras, we will be able to have a working localization system even without the other techniques. Additionally, we hope that by giving an end date for some of the components we will be able to move on and not spend too long optimizing any one component.
+
+    \begin{itemize}
+      \item B Term:
       \begin{itemize}
-        \item Support 4 wheel differential drive robots moving at continuous driving speeds of up to \SI{3}{\meter\per\second}
-        \item Support the NavX and do complementary and basic Kalman filtering
-        \item Differentiate between tags with the camera and measure pose relative to them with a standard 720p webcam.
-        \item Beacons provide global position updates.
-        \item Use the out of the box OpenCV API to get x and y translation between frames
-        \item Provide a GUI for specifying the configuration of the sensors on the robot and the configuration of the field or practice space.
-        \item Accurately describe the conditions under which camera localization will work, especially with respect to jitter and occlusion.
-        \item Support getting the position from each subsystem individually
-        \item Support getting one fused position update
-        \item Specify what kinds of sensor mounting configurations are supported
-        \item Specify which of the subsystems are necessary and which are optional (encoders are necessary, IMUs are optional)
-        \item Provide the designs and the code for the beacons, such that teams do not need to edit the code. Any constants are in a configuration file.
-        \item Must Provide the optimal analysis or coverage of an empty FRC field and the 2018 field
-        \item Must Provide the methodology for finding the optimal placement of tags and beacons for other shape fields (describe what we did to get part 6.g.i)
-        \item Must fail gracefully when some of the sensing techniques are unreliable or failing
+        \item Meet goals for encoders, IMUs, and cameras with tags
+        \item Specifying robot configuration and tag locations in the GUI
       \end{itemize}
-
-      These goals will hopefully constrain the scope of each localization technique such that all of them can be incorporated to some degree. Furthermore, we have drafted a timeline of which of these goals we will focus on over the course of the year. For example, by choosing to start with encoders, IMUs, and cameras, we will be able to have a working localization system even without the other techniques. Additionally, we hope that by giving an end date for some of the components we will be able to move on and not spend too long optimizing any one component.
-
+      \item C Term:
       \begin{itemize}
-        \item B Term:
-        \begin{itemize}
-          \item Meet goals for encoders, IMUs, and cameras with tags
-          \item Specifying robot configuration and tag locations in the GUI
-        \end{itemize}
-        \item C Term:
-        \begin{itemize}
-          \item Meet goals for beacons and optical flow
-          \item Fuse all techniques into one position update
-          \item GUI supports configuring beacons
-        \end{itemize}
-        \item D Term:
-        \begin{itemize}
-          \item Meet documentation goals for teams
-          \item Provide the designs and the code for all components
-          \item Write the final report
-        \end{itemize}
+        \item Meet goals for beacons and optical flow
+        \item Fuse all techniques into one position update
+        \item GUI supports configuring beacons
       \end{itemize}
-
+      \item D Term:
+      \begin{itemize}
+        \item Meet documentation goals for teams
+        \item Provide the designs and the code for all components
+        \item Write the final report
+      \end{itemize}
+    \end{itemize}
 
 \section{Conclusion} \label{conclusion}
 
