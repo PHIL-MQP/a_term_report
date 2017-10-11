@@ -23,7 +23,7 @@
 
 \section{Introduction}
 
-  Knowing the position and orientation of a mobile robot is critical to many tasks. For robots designed for high-speed gameplay, knowing the position and orientation allows the robot to perform complex autonomous behaviors such as shooting and retrieving game objects. In this report, we describe a system for determining the pose $(x, y, \theta)$ of a mobile robot in a cluttered environment. The environment we are interested in is the FIRST Robotics Competition (FRC). FRC is a challenging environment because the robots make rapid and aggressive maneuvers by human drivers for part of the time, and at other times are under complete autonomy. Another challenge is that FRC fields are cluttered with other robots and game pieces such as soccer balls, pool noddles, or inflatable shapes, and these objects change from year to year. A successful localization system for FRC must handle up to six robots, as well as occlusion from the playing field elements, unpredictable lighting, and frequent impacts. Our research suggests that there are at least five appropriate methods for localization: cameras and tags, radio and ultrasonic beacons, optical flow, dead reckoning with encoders, and dead reckoning with an IMU. All of these methods have seen success in robot localization.
+  Knowing the position and orientation of a mobile robot is critical to many tasks. For robots designed for high-speed gameplay, knowing the position and orientation allows the robot to perform complex autonomous behaviors such as shooting and retrieving game objects. In this report, we describe a system for determining the pose $(x, y, \theta)$ of a mobile robot in a cluttered environment. The environment we are interested in is the FIRST Robotics Competition (FRC). FRC is a challenging environment because the robots make rapid and aggressive maneuvers by human drivers for part of the time, and at other times are under complete autonomy. Another challenge is that FRC fields are cluttered with other robots and game pieces such as soccer balls, pool noddles, or inflatable shapes, and these objects change from year to year. A successful localization system for FRC must support up to six robots, as well as occlusion from the playing field elements, unpredictable lighting, and frequent impacts. Our research suggests that there are at least five appropriate methods for localization: cameras and tags, radio and ultrasonic beacons, optical flow, dead reckoning with encoders, and dead reckoning with an IMU. All of these methods have seen success in robot localization.
 
   This report begins with a review of existing literature on indoor localization for mobile robots in the \nameref{related_work} section. The strengths and weaknesses of these existing methods are described in the \nameref{methods} section. The \nameref{experiments} section contains information on experiments we conducted. The \nameref{specs} section provides a complete description of our design criteria and system specifications. The \nameref{conclusion} section details our plan moving forward.
 
@@ -35,7 +35,7 @@
       \item Ultrasonic mapping
       \item IMU and Encoders fusion
       \item Infrared or Radio and Ultrasonic beacons
-      \item Wirless network methods based on signal strength
+      \item Wireless network methods based on signal strength
       \item cameras with visually identifiable tags
       \item Stereo vision and depth cameras
       \item Optical flow mice and cameras
@@ -47,7 +47,7 @@
 
   \subsection{Ultrasonic Mapping}
 
-    Ultrasonic mapping (often referred to as sonar) was one of the first techniques used for indoor robot localization, and has been explored deeply since the 1980's. The most common approach is to use multiple emitter-reciever pairs placed around the perimeter of the robot, measure the range at each of those points, then localize to a given map of the environment \cite{drumheller_mobile_1987}. Alternately, some systems use one sensor and rotate it around to acheive the same effect \cite{leonard_mobile_1991, drumheller_mobile_1987}. The algorithms for interpereting the measured distances work by first extracting lines, then matching these lines to an existing map. Reported accuracies of the system in \cite{drumheller_mobile_1987} was 1 ft for position, and 10 degrees for angle. In \cite{drumheller_mobile_1987} and \cite{leonard_mobile_1991}, the reported rate of position updates is \SI{1}{\hertz}. Additionally, some methods will explicitely model the uncertainty of the position estiamte, or explicitely model the behavior of ultrasonic sensors to ignore unreliable data. A more recent and sophisticated approach to localizing with sonar can be found in \cite{tardos_robust_2002}, in which 24 sonar sensors in conjunction with encoders were used to perform simultaneous localization and mapping. Their experimental results report drifts of \SI{3.9}{\meter} and \ang{21} over the course of \SI{35}{\meter} of travel.
+    Ultrasonic mapping (often referred to as sonar) was one of the first techniques used for indoor robot localization, and has been explored deeply since the 1980's. The most common approach is to use multiple emitter-receiver pairs placed around the perimeter of the robot, measure the range at each of those points, then localize to a given map of the environment \cite{drumheller_mobile_1987}. Alternately, some systems use one sensor and rotate it around to achieve the same effect \cite{leonard_mobile_1991, drumheller_mobile_1987}. The algorithms for interpreting the measured distances work by first extracting lines, then matching these lines to an existing map. Reported accuracies of the system in \cite{drumheller_mobile_1987} was 1 ft for position, and 10 degrees for angle. In \cite{drumheller_mobile_1987} and \cite{leonard_mobile_1991}, the reported rate of position updates is \SI{1}{\hertz}. Additionally, some methods will explicitly model the uncertainty of the position estimate, or explicitly model the behavior of ultrasonic sensors to ignore unreliable data. A more recent and sophisticated approach to localizing with sonar can be found in \cite{tardos_robust_2002}, in which 24 sonar sensors in conjunction with encoders were used to perform simultaneous localization and mapping. Their experimental results report drifts of \SI{3.9}{\meter} and \ang{21} over the course of \SI{35}{\meter} of travel.
 
   \subsection{IMUs and Encoders}
     An inertial measurement unit (IMU) is a sensor reporting the forces acting upon an object, the angular rates of change, and surrounding magnetic field. The device typically comprises an accelerometer, gyroscope, and magnetometer which sense the above data respectively. These devices function by detecting Coriolis forces, inertial forces acting in the direction of motion relative to a rotating reference frame. These forces are proportional to the magnitude of the acceleration. These forces may be detected by a simple strain gauge mechanism or object vibrating at a know frequency ( the rate of change of vibration frequency is detected) \cite{barshan_199354}. The premise behind position sensing using this device involves integrating the data with respect to time to calculate position and orientation. This approach was first used in aeronautics to estimate projectile attitude, orientation, and position \cite{agard_1989}. High cost IMU's have been used historically for defense and transportation systems; the quality of the sensor is high and the data is reliable in these applications. An inertial navigation system (INS) often comprises multiple accelerometers, gyroscopes, and magnetometers to estimate orientation and position. Their performance is increased by referencing, or filtering, one sensor to estimate the error from another. Simple double integration of a filtered system using expensive sensors is often sufficient for position tracking applications like ballistics or missile tracking \cite{barshan_199354}.
@@ -94,17 +94,17 @@
 
 \section{Evaluation of Localization Techniques} \label{methods}
 
-  Each of the techniques presented thus far have strengths and weaknesses. In cases where those strengths and weaknesses are orthogonal, combinging multiple techniques improves the overall performance. This is the fundemental principle behind sensor fusion. For example, in \cite{kim_advanced_2008} the authors use a compass to make up for the inability of beacons to measure orientation of the robot. In order to handle all of the diverse challenges of localization in the FRC environment, it is necessary to combine techniques that work together. In this section we will outline the advantages and disadvantages of each technique and justify why none of the techniques discussed are sufficient on their own.
+  Each of the techniques presented thus far have strengths and weaknesses. In cases where those strengths and weaknesses are orthogonal, combining multiple techniques improves the overall performance. This is the fundamental principle behind sensor fusion. For example, in \cite{kim_advanced_2008} the authors use a compass to make up for the inability of beacons to measure orientation of the robot. In order to tackle all of the diverse challenges of localization in the FRC environment, it is necessary to combine techniques that work together. In this section we will outline the advantages and disadvantages of each technique and justify why none of the techniques discussed are sufficient on their own.
 
   Inertial sensing offers several promising results, but suffers from accumulated drift is not developed enough to function as a stand-alone localization system. The cost of the sensor is inversely proportional to error, and high quality devices are prohibitively expensive. A majority of end-users of the system proposed in this paper have experience with inertial sensing, presenting a need for support of basic features such as heading detection and filtering. This complements other subsystems because they suffer from lower update frequencies and physical sources of error. In this way, an IMU is used to complement an existing suite of sensors. Although research in this field is extensive, much is developed around outdoor navigation or aeronautics and requires some adaptation. Extensive incorporation of advanced techniques may be out of scope for this project.
 
-  Occlusion is one of the major challenges facing global localization systems designed for FRC. In many cases, there are other robots or field obstacles than can block vision or ultrasonic signals. However, there are no obstacles that would block radio or other high frequency signals. Lidar and ultrasonic systems both struggle in this case because the map of the field is interrupted. Occlusion is also problematic for cameras looking for tags and ultrasonic beacons. However, local pose estimation techniques like encoders and IMUs are unaffected by occlusion. Pairing IMUs and encoders with cameras or beacons has the advantage of not failing completely during short periods of occlusion. Furthermore, by using both beacons and cameras, we can increase likelihood that one of the two systems will be able to reach their landmarks. Wireless networks perform very under these scenarios, but they require knowldge and control over the 2.5 gHz spectrum in the area where they are used. At FRC events, there can be dozens of wireless networks running, as well as the wireless netowkorks used on the field for communication between robots. For this reason, we feel that techniques using wireless frequency have too many unknown variables.
+  Occlusion is one of the major challenges facing global localization systems designed for FRC. In many cases, there are other robots or field obstacles than can block vision or ultrasonic signals. However, there are no obstacles that would block radio or other high frequency signals. Lidar and ultrasonic systems both struggle in this case because the map of the field is interrupted. Occlusion is also problematic for cameras looking for tags and ultrasonic beacons. However, local pose estimation techniques like encoders and IMUs are unaffected by occlusion. Pairing IMUs and encoders with cameras or beacons has the advantage of not failing completely during short periods of occlusion. Furthermore, by using both beacons and cameras, we can increase likelihood that one of the two systems will be able to reach their landmarks. Wireless networks perform very under these scenarios, but they require knowledge and control over the 2.5 gHz spectrum in the area where they are used. At FRC events, there can be dozens of wireless networks running, as well as the wireless networks used on the field for communication between robots. For this reason, we feel that techniques using wireless frequency have too many unknown variables.
 
-  Another major issue with any methods relying on the refleection of ultrasonic is the interference between robots. If multiple robots range ultrasonic near one another, there could be cross talk or interference between the signals. For is reason enough to rule out any use of reflecting ultrasonic. Note however that ultrasonic beacons do not have this weakness, since the pulses being emitted are not expected to reflect.
+  Another major issue with any methods relying on the reflection of ultrasonic is the interference between robots. If multiple robots range ultrasonic near one another, there could be cross talk or interference between the signals. For is reason enough to rule out any use of reflecting ultrasonic. Note however that ultrasonic beacons do not have this weakness, since the pulses being emitted are not expected to reflect.
 
-  Lidar mapping has been shown to be one of the highest performing localization methods in terms of accuracy, precision and update rate. The two reasons why we are not persuing it further are cost and applicability to FRC. Lidars capable of ranging across an entire FRC field are over \$400, which is the cost limit for any single part on an FRC robot. Lidar techniques also require either mapping on the fly, or an existing map. Mapping on the fly presents its own challenges, and usually suffers from very bad localization for some initial period of time while the map is built. Existing maps would work very well on the competition FRC fields, but would not apply in the practice spaces teams us, and it is unrealistic to have a consistent practice space in an FRC shop.
+  Lidar mapping has been shown to be one of the highest performing localization methods in terms of accuracy, precision and update rate. The two reasons why we are not pursuing it further are cost and applicability to FRC. Lidars capable of ranging across an entire FRC field are over \$400, which is the cost limit for any single part on an FRC robot. Lidar techniques also require either mapping on the fly, or an existing map. Mapping on the fly presents its own challenges, and usually suffers from very bad localization for some initial period of time while the map is built. Existing maps would work very well on the competition FRC fields, but would not apply in the practice spaces teams us, and it is unrealistic to have a consistent practice space in an FRC shop.
 
-  Radio and ultrasonic beacons are very attractive because of their low cost, flexibility of setup. The cost of each beacon, according to the specifications laid out in section \ref{section:system_spec}, are projected to cost about \$30 (see \ref{table:beacon_bom}). Becaons have more flexibility in their placement than tags because they are much smaller and do not need to be on flat surfaces, or in specific orientations.
+  Radio and ultrasonic beacons are very attractive because of their low cost, flexibility of setup. The cost of each beacon, according to the specifications laid out in section \ref{section:system_spec}, are projected to cost about \$30 (see \ref{table:beacon_bom}). Beacons have more flexibility in their placement than tags because they are much smaller and do not need to be on flat surfaces, or in specific orientations.
 
   Optical flow gives us accurate angle measurements and fast updates that are relative to our current position. Like all camera based solutions, the vibration of the robot will likely makes this technique difficult. However, cameras are the most widely used sensor according to our survey of FRC students and alumni.
   The camera also doubles as a sensor for matrix tags, which give us accurate position estimates in the global frame. This is complemented by beacons, which update more slowly, but are not effected by occlusion and is robust to vibration.
@@ -123,16 +123,16 @@
       \end{figure}
 
 
-      Next we performed a similar experiment with the ultrasonic transducers. For this experiment, we used two NTX-1004PZ piezo tweeters placed \SI{25}{\centi\meter} apart. The NTX-1004PZ is meant to be a normal high-frequency for DJ rigs, and is designed to operate between \SI{4}{\kilo\hertz} and \SI{20}{\kilo\hertz}. However, because they are incredibly cheap we decided to evaluate them as ultrasonic speakers running just above that range. One was connected to a PSoC 5LP for transmitting, and the other was connected only to the oscilloscope. The other oscilloscope prove was connected to the transmitting piezo. The time difference between the transmitting signal on and the receiving signal was measured. The signal applied to the transmitter was short bursts of a 24kHz square wave. The measure time delay between the transmit and receive very closely matched the expected time for sound to travel between the speakers. This indiacates that we will not need to account for constant delays in the transmit or receive circuits. However, there were several other noteworthy behaviors we discovered during these tests. First, we noticed that any immediate changes in the frequency of the transmit signal will clicks in the audible range. these clicks do not effect the distance measurement, but they are mildly annoying and should be supressed if possible by changing the transmit signal.
+      Next we performed a similar experiment with the ultrasonic transducers. For this experiment, we used two NTX-1004PZ piezo tweeters placed \SI{25}{\centi\meter} apart. The NTX-1004PZ is meant to be a normal high-frequency for DJ rigs, and is designed to operate between \SI{4}{\kilo\hertz} and \SI{20}{\kilo\hertz}. However, because they are incredibly cheap we decided to evaluate them as ultrasonic speakers running just above that range. One was connected to a PSoC 5LP for transmitting, and the other was connected only to the oscilloscope. The other oscilloscope prove was connected to the transmitting piezo. The time difference between the transmitting signal on and the receiving signal was measured. The signal applied to the transmitter was short bursts of a 24kHz square wave. The measure time delay between the transmit and receive very closely matched the expected time for sound to travel between the speakers. This indicates that we will not need to account for constant delays in the transmit or receive circuits. However, there were several other noteworthy behaviors we discovered during these tests. First, we noticed that any immediate changes in the frequency of the transmit signal will clicks in the audible range. these clicks do not effect the distance measurement, but they are mildly annoying and should be suppressed if possible by changing the transmit signal.
 
   \subsection{Measuring Frequency Response}
 
-      After testing for delays in the ultrasonic circuitry, we also measured the frequency response of the NTX-1004PZ. We placed two tweeters in the same configuration as described above. Using a function generator, we transmitted a square wave at 8vPP and swept from \SI{20}{\kilo\hertz} to \SI{30}{\kilo\hertz} and back down over the course of 20 seconds. We attached an oscilloscope to the receiving speaker and captured the power at each frequency using the FFT mode, persisting the display over the course of the sweep to see how the frequency response changes across our frequency range. Figure \ref{fig:frequency_response} shows the results of this experiment. From this experiment, we learned that the best frequency response is achieved at \SI{22}{\kilo\hertz}, and the after \SI{27}{\kilo\hertz} the signal is indisinguishable from the noise.
+      After testing for delays in the ultrasonic circuitry, we also measured the frequency response of the NTX-1004PZ. We placed two tweeters in the same configuration as described above. Using a function generator, we transmitted a square wave at 8vPP and swept from \SI{20}{\kilo\hertz} to \SI{30}{\kilo\hertz} and back down over the course of 20 seconds. We attached an oscilloscope to the receiving speaker and captured the power at each frequency using the FFT mode, persisting the display over the course of the sweep to see how the frequency response changes across our frequency range. Figure \ref{fig:frequency_response} shows the results of this experiment. From this experiment, we learned that the best frequency response is achieved at \SI{22}{\kilo\hertz}, and the after \SI{27}{\kilo\hertz} the signal is indistinguishable from the noise.
 
       \begin{figure}
         \centering
         \includegraphics[scale=0.75]{./images/frequency_response.JPG}
-        \caption{Frequency response of the NTX-1004PZ. The best response is acheived at 22kHz, and the highest detectable frequency is 27kHz.}
+        \caption{Frequency response of the NTX-1004PZ. The best response is achieved at 22kHz, and the highest detectable frequency is 27kHz.}
         \label{fig:frequency_response}
       \end{figure}
 
@@ -143,7 +143,7 @@
 
     Here we present our goals and the criteria our system must meet in order to be successful. Broadly, we consider the following factors to be those which are important to the success of our system.
     \begin{enumerate}
-      \item \textbf{Accuracy}\\ how close our position estamates are to ground truth.
+      \item \textbf{Accuracy}\\ how close our position estimates are to ground truth.
       \item \textbf{Precision}\\ how close our position estimates are to each other given the same ground truth.
       \item \textbf{Update Rate}\\ how quickly does our system provide position estimates.
       \item \textbf{Accessibility}\\ how affordable is our system, how difficult is it to make, and how easy is it for teams to use.
@@ -151,9 +151,9 @@
 
     To come up with hard numbers for these criteria, we first performed a few simple calculations based on our knowledge of FRC. First, we consider what teams would want to use position information for, and decided that the applications requiring the most accuracy are shooting and autonomous pick of game pieces at known locations. Both of these require the position estimates to be close to the true position of the robot. From there, we know that most FRC shooting and pickup mechanisms will work within $\pm$\SI{10}{\centi\meter}. Next, we decided the application requiring the most precision would be path following. If position estimates are imprecise and jump around rapidly, smooth path following will be difficult. From our experience with path following, we estimated that $\pm$\SI{5}{\centi\meter} would be sufficient. For update rate, we considered what the maximum distance a robot could move within a period and used that to decide what our update rate should be. The very fastest FRC robots move \SI{6}{\meter\per\second}, which at an update rate of every \SI{20}{\milli\second} is a distance of $0.02*6 =$ \SI{0.12}{\meter}. The rate of \SI{20}{\milli\second} is a realistic cycle time in FRC, and we feel \SI{12}{\centi\meter} is sufficient given the speed. For accessibility, we acknowledged that teams cannot spend more than \$400 on any part, and that most times source parts from websites AndyMark, Cross-the-road Electronics, and National Instruments among other suppliers. We are also conscious that many FRC teams have limited or cluttered spaces for testing their robots, and may be working in a shared space that must be clean and usable after their work sessions.
 
-    Using all of these informal estimates as a starting point, we conducted a survey of FRC students, Alumni, and mentors. We received 65 responses in total, and used the results of this survey to solidify our design criteria. The full response of this survey are presented in \nameref{appendix:survey}. In summary, the median for accuracy was \SI{10}{\centi\meter} in x,y and \ang{5} in yaw. Our survey did not include questions about precision and update rate, because they depend on what position is used for. Instead, we asked if students would try path planning if they had a localization system, which would back up our estimate of precision. Our survey indicated that 90\% of students would try to make the robot autonomously follow paths. Therefore, our precision estiamted based on path planning as an application is supported by our survey. Update rate was not addressed in the survey because we didn't think FRC studens would have informed opinions on this metric. Finally, we asked several questions about the accessibility requirements. A cost of under \$200 was deemed acceptable by 84.6\% of responses, and so we have made \$200 our goal for cost. Furthermore, we learned that the amount of space in teams shops varies from a 5 by 5 foot space up to several thousand square feet, but the median shop size is 775 $ft^2$, which one can imagine as a 25 by 30 ft space. In terms of access, about 76.5\% of teams could leave up tags or beacons, with the others stating that they must clean up everything because they work in a shared space such as a classroom. Lastly, we asked students what sensors they were familiar with. The most familiar sensors were cameras (90\%), followed by encoders (84.6\%), then IMUs (60\%). Therefore, it would be benefitial to incorporate cameras, encoders, and IMUs because teams are already familiar with them.
+    Using all of these informal estimates as a starting point, we conducted a survey of FRC students, Alumni, and mentors. We received 65 responses in total, and used the results of this survey to solidify our design criteria. The full response of this survey are presented in \nameref{appendix:survey}. In summary, the median for accuracy was \SI{10}{\centi\meter} in x,y and \ang{5} in yaw. Our survey did not include questions about precision and update rate, because they depend on what position is used for. Instead, we asked if students would try path planning if they had a localization system, which would back up our estimate of precision. Our survey indicated that 90\% of students would try to make the robot autonomously follow paths. Therefore, our precision estimated based on path planning as an application is supported by our survey. Update rate was not addressed in the survey because we didn't think FRC students would have informed opinions on this metric. Finally, we asked several questions about the accessibility requirements. A cost of under \$200 was deemed acceptable by 84.6\% of responses, and so we have made \$200 our goal for cost. Furthermore, we learned that the amount of space in teams shops varies from a 5 by 5 foot space up to several thousand square feet, but the median shop size is 775 $ft^2$, which one can imagine as a 25 by 30 ft space. In terms of access, about 76.5\% of teams could leave up tags or beacons, with the others stating that they must clean up everything because they work in a shared space such as a classroom. Lastly, we asked students what sensors they were familiar with. The most familiar sensors were cameras (90\%), followed by encoders (84.6\%), then IMUs (60\%). Therefore, it would be beneficial to incorporate cameras, encoders, and IMUs because teams are already familiar with them.
 
-    Ultimately, we formulated design criteria based on our own experience with FRC and with localization, as well as by condnucting a survey of the needs, experience, and opinions of FRC particpants. These design criteria will help us pick which localization techniques to pursue as well as define the goals for our system.
+    Ultimately, we formulated design criteria based on our own experience with FRC and with localization, as well as by conducting a survey of the needs, experience, and opinions of FRC participants. These design criteria will help us pick which localization techniques to pursue as well as define the goals for our system.
 
   \subsection{System Specification}\label{section:system_spec}
 
@@ -169,7 +169,7 @@
 
     We have found examples of each of these techniques being used successfully, and in many cases have verified that they satisfy our criteria for accuracy, precision, update rate, and accessibility criteria. We are confident that any combination of these methods would work. Nonetheless, it is unreasonable to attempt to use all of these methods in the time frame of this project, and therefore we have decided to move forward with beacons, optical flow, and matrix tags. These techniques are complementary in their sources of error, and together we believe they will make a robust localization system.
 
-  \subsection{Implemenation Details}
+  \subsection{Implementation Details}
 
     Having decided on the sensing techniques we will use, we now describe our detailed system Specification. Ideally, the description in this section serves as the full plan for our implementation of the system during B Term, and most of the major design decisions have been made and clearly presented.
 
@@ -259,11 +259,54 @@
       \caption{estimated bill of material for beacons}
     \end{table}
 
-    % TODO: explain the parts we know in detail, like the proposed beacon protocol
+    \subsection{Timeline and Goals}
 
-    % TODO: Setup appendix for things like the survey
+      To maximize the likelihood that our project is complete in timely manner and with rigorous methodology, we have drafted a set of goals and a timeline to help us manage our time. Below we present our set of \textit{must} goals, which we have agreed are all required for our project to be a success (in no particular order).
+
+      \begin{itemize}
+        \item Support 4 wheel differential drive robots moving at continuous driving speeds of up to \SI{3}{\meter\per\second}
+        \item Support the NavX and do complementary and basic Kalman filtering
+        \item Differentiate between tags with the camera and measure pose relative to them with a standard 720p webcam.
+        \item Beacons provide global position updates.
+        \item Use the out of the box OpenCV API to get x and y translation between frames
+        \item Provide a GUI for specifying the configuration of the sensors on the robot and the configuration of the field or practice space.
+        \item Accurately describe the conditions under which camera localization will work, especially with respect to jitter and occlusion.
+        \item Support getting the position from each subsystem individually
+        \item Support getting one fused position update
+        \item Specify what kinds of sensor mounting configurations are supported
+        \item Specify which of the subsystems are necessary and which are optional (encoders are necessary, IMUs are optional)
+        \item Provide the designs and the code for the beacons, such that teams do not need to edit the code. Any constants are in a configuration file.
+        \item Must Provide the optimal analysis or coverage of an empty FRC field and the 2018 field
+        \item Must Provide the methodology for finding the optimal placement of tags and beacons for other shape fields (describe what we did to get part 6.g.i)
+        \item Must fail gracefully when some of the sensing techniques are unreliable or failing
+      \end{itemize}
+
+      These goals will hopefully constrain the scope of each localization technique such that all of them can be incorporated to some degree. Furthermore, we have drafted a timeline of which of these goals we will focus on over the course of the year. For example, by choosing to start with encoders, IMUs, and cameras, we will be able to have a working localization system even without the other techniques. Additionally, we hope that by giving an end date for some of the components we will be able to move on and not spend too long optimizing any one component.
+
+      \begin{itemize}
+        \item B Term:
+        \begin{itemize}
+          \item Meet goals for encoders, IMUs, and cameras with tags
+          \item Specifying robot configuration and tag locations in the GUI
+        \end{itemize}
+        \item C Term:
+        \begin{itemize}
+          \item Meet goals for beacons and optical flow
+          \item Fuse all techniques into one position update
+          \item GUI supports configuring beacons
+        \end{itemize}
+        \item D Term:
+        \begin{itemize}
+          \item Meet documentation goals for teams
+          \item Provide the designs and the code for all components
+          \item Write the final report
+        \end{itemize}
+      \end{itemize}
+
 
 \section{Conclusion} \label{conclusion}
+
+  Over the course of A Term, we conducted thorough background research on various methods for localization and evaluated their performance. Based on numerous report for each localization technique, a survey of FRC students and alumni, and our own knowledge of the challenges of localization for FRC we narrowed down the list of possible techniques to encoders, IMUs, beacons, cameras and tags, and optical flow. Each of these methods has been shown to work in other indoor mobile robot environments, and together they make up for the weakness of each individual method. Our strategy will be to apply each of these five techniques to the degree we believe is necessary to meet our design criteria, rather than to choose one method and optimize it deeply. Our performance will be judged against the design criteria stated above, and we have developed goals and a timeline to guide our work moving forward.
 
 \section{Appendix}
 
@@ -272,21 +315,11 @@
     Survey Responses
 
     \begin{figure}[H]
-      \centering
-      \includegraphics[width=1\linewidth]{./images/survey_angle.png}
-      \label{fig:survey_angle}
-    \end{figure}
-
-    \begin{figure}[H]
-      \centering
-      \includegraphics[width=1\linewidth]{./images/survey_position.png}
-      \label{fig:survey_position}
-    \end{figure}
-
-    \begin{figure}[H]
-      \centering
-      \includegraphics[width=1\linewidth]{./images/survey_worth.png}
-      \label{fig:survey_worth}
+      %\centering
+      \includegraphics[height=4.2cm]{./images/survey_angle.png}
+      \includegraphics[height=4.2cm]{./images/survey_position.png}
+      \includegraphics[height=4.2cm]{./images/survey_worth.png}
+      \label{fig:survey}
     \end{figure}
 
   \subsection{Appendix B}\label{appendix:rf-rx-tx}
@@ -294,7 +327,7 @@
     \begin{table}[H]
       \begin{tabular}{|l|l|l|l|l|}
         \hline
-        %Measured Distance (m) & \multicolumn{3}{l|}{Measured Total Time (\mu s)} & Average Delay (\mu s) \\
+        Measured Distance (m) & \multicolumn{3}{|l|}{Measured Total Time ($\mu$s)} & Average Delay \\
         \hline
         0.0630 & 45.44 & 42.80 & 34.48 & 40.90646 \\
         0.1425 & 52.72 & 50.48 & 52.09 & 51.76286 \\
@@ -309,7 +342,7 @@
         0.3600 & 38.40 & 38.40 & 37.68 & 38.15880 \\
         0.0070 & 35.60 & 36.08 & 34.32 & 35.33331 \\
         \hline
-        %\multicolumn{4}{|l}{Overall Average Delay (\mu s)} & 46.175 \\
+        \multicolumn{4}{|r|}{Average Delay ($\mu$s)} & 46.175 \\
         \hline
       \end{tabular}
       \caption{The time of flight of radio over tens of centimeters is insignificant compared to the delay within the transmitter and receiver.}
