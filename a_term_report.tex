@@ -37,7 +37,7 @@
       \item Infrared or Radio and Ultrasonic beacons
       \item Wireless network methods based on signal strength
       \item cameras with visually identifiable tags
-      \item Stereo vision and depth cameras
+      %\item Stereo vision and depth cameras
       \item Optical flow mice and cameras
   \end{itemize}
 
@@ -94,7 +94,7 @@
 
 \section{Evaluation of Localization Techniques} \label{methods}
 
-  Each of the techniques presented thus far have strengths and weaknesses. In cases where those strengths and weaknesses are orthogonal, combining multiple techniques improves the overall performance. This is the fundamental principle behind sensor fusion. For example, in \cite{kim_advanced_2008} the authors use a compass to make up for the inability of beacons to measure orientation of the robot. In order to tackle all of the diverse challenges of localization in the FRC environment, it is necessary to combine techniques that work together. In this section we will outline the advantages and disadvantages of each technique and justify why none of the techniques discussed are sufficient on their own.
+  Each of the techniques presented thus far have strengths and weaknesses. In cases where those strengths and weaknesses are orthogonal, combining multiple techniques improves the overall performance. This is the fundamental principle behind sensor fusion. For example, in \cite{kim_advanced_2008} the authors use a compass to make up for the inability of beacons to measure orientation of the robot. In order to tackle all of the diverse challenges of localization in the FRC environment, we believe it is necessary to combine techniques. In this section we will outline the advantages and disadvantages of each technique, justify why none of the techniques discussed are sufficient on their own, and explain which techniques we will pursue and why.
 
   Inertial sensing offers several promising results, but suffers from accumulated drift is not developed enough to function as a stand-alone localization system. The cost of the sensor is inversely proportional to error, and high quality devices are prohibitively expensive. A majority of end-users of the system proposed in this paper have experience with inertial sensing, presenting a need for support of basic features such as heading detection and filtering. This complements other subsystems because they suffer from lower update frequencies and physical sources of error. In this way, an IMU is used to complement an existing suite of sensors. Although research in this field is extensive, much is developed around outdoor navigation or aeronautics and requires some adaptation. Extensive incorporation of advanced techniques may be out of scope for this project.
 
@@ -120,8 +120,8 @@
       \begin{figure}
         \centering
         \includegraphics[scale=0.2]{./images/rf_delay_ex.PNG}
-        \label{fig:rf_delay_ex}
         \caption{Example measurement total trip time for radio signal. The blue line is the input to the transmitter, and the yellow is the output of the receiver}
+        \label{fig:rf_delay_ex}
       \end{figure}
 
 
@@ -168,7 +168,51 @@
         \item Camera with matrix tags
     \end{enumerate}
 
-    We have found examples of each of these techniques being used successfully, and in many cases have verified that they satisfy our criteria for accuracy, precision, update rate, and accessibility criteria. We are confident that any combination of these methods would work. Nonetheless, it is unreasonable to attempt to use all of these methods in the time frame of this project, and therefore we have decided to move forward with beacons, optical flow, and matrix tags. These techniques are complementary in their sources of error, and together we believe they will make a robust localization system.
+    We have found examples of each of these techniques being used successfully, and in many cases have verified that they satisfy our criteria for accuracy, precision, update rate, and accessibility criteria. We are confident that any combination of these methods would work. These techniques are complementary in their sources of error, and together we believe they will make a robust localization system.
+
+  \subsection{Timeline and Goals}
+
+    To maximize the likelihood that our project is complete in timely manner and with rigorous methodology, we have drafted a set of goals and a timeline to help us manage our time. Below we present our set of \textit{must} goals, which we have agreed are all required for our project to be a success (in no particular order).
+
+    \begin{itemize}
+      \item Support 4 wheel differential drive robots moving at continuous driving speeds of up to \SI{3}{\meter\per\second}
+      \item Support the NavX and do complementary and basic Kalman filtering
+      \item Differentiate between tags with the camera and measure pose relative to them with a standard 720p webcam.
+      \item Beacons provide global position updates.
+      \item Use the out of the box OpenCV API to get x and y translation between frames
+      \item Provide a GUI for specifying the configuration of the sensors on the robot and the configuration of the field or practice space.
+      \item Accurately describe the conditions under which camera localization will work, especially with respect to jitter and occlusion.
+      \item Support getting the position from each subsystem individually
+      \item Support getting one fused position update
+      \item Specify what kinds of sensor mounting configurations are supported
+      \item Specify which of the subsystems are necessary and which are optional (ex: encoders are necessary, beacons are optional)
+      \item Provide the designs and the code for the beacons.
+      \item Provide the optimal analysis or coverage of an empty FRC field and the 2018 field
+      \item Provide the methodology for finding the optimal placement of tags and beacons for other shape fields
+      \item Fail gracefully when some of the sensing techniques are unreliable or failing
+    \end{itemize}
+
+    These goals will hopefully constrain the scope of each localization technique such that all of them can be incorporated to some degree. Furthermore, we have drafted a timeline of which of these goals we will focus on over the course of the year. For example, by choosing to start with encoders, IMUs, and cameras, we will be able to have a working localization system even without the other techniques. Additionally, we hope that by giving an end date for some of the components we will be able to move on and not spend too long optimizing any one component.
+
+    \begin{itemize}
+      \item B Term:
+      \begin{itemize}
+        \item Meet goals for encoders, IMUs, and cameras with tags
+        \item Specifying robot configuration and tag locations in the GUI
+      \end{itemize}
+      \item C Term:
+      \begin{itemize}
+        \item Meet goals for beacons and optical flow
+        \item Fuse all techniques into one position update
+        \item GUI supports configuring beacons
+      \end{itemize}
+      \item D Term:
+      \begin{itemize}
+        \item Meet documentation goals for teams
+        \item Provide the designs and the code for all components
+        \item Write the final report
+      \end{itemize}
+    \end{itemize}
 
   \subsection{Implementation Details}
 
@@ -176,7 +220,10 @@
 
     \subsubsection{Radio and Ultrasonic Beacons}
 
-      Important implementation details of the beacon system include the number of beacons needed, the radio communications protocol, and the ultrasonic signal format. The number of beacons can either be picked to minimize cost, and then the beacons can be designed to meet this criteria, or the characteristics of the beacons can be determined and the number of beacons needed derived from that. In order to support arbitrary practice areas, the second method is preferred. In this section we cover relevant calculations and possible implementation details for beacons.
+      Important implementation details of the beacon system include the number of beacons needed, the radio communications protocol, and the ultrasonic signal format. The number of beacons can either be picked to minimize cost, and then the beacons can be designed to meet this criteria, or the characteristics of the beacons can be determined and the number of beacons needed derived from that. In order to support arbitrary practice areas, the second method is preferred. In this section we cover relevant calculations and possible implementation details for beacons. \\
+
+      \textbf{Overview of components} \\
+      Each beacon consists of a PSoc5 LP processor, NTX-1004PZ piezo transducer, XY-MK \SI{433}{\mega\hertz} radio transmitter, XY-FST \SI{433}{\mega\hertz} radio receiver, and other supporting components. During normal operation, each beacon will listen for a radio signal telling it to emit an ultrasonic signal. We expect that a few other components such as resistors, LEDs, and a battery will be required for the final beacon. \\
 
       \textbf{Format for Ultrasonic Signal} \\
       The ultrasonic signal should be designed to maximize both the distance it can be detected from and accuracy with which it's timing can be detected. Using a simple pulse of fixed frequency and amplitude is not ideal because it trades off energy transmitted (and thus distance) with accuracy. This is because a longer pulse contained more energy and can be detected from further, but at the same time the receiver cannot distinguish timing within the length of the pulse. Therefore, a chirp signal will be used. Compare the usual function relating amplitude to time of a sine wave to the quadratic chirp signal.
@@ -200,7 +247,7 @@
 
         This is the waveform we will be emitting from the ultrasonic sensors. The benefit is that it can be high power and still allow the receiver to determine precisely where in the waveform it is listening. One method for doing this is to take the discrete short time Fourier transform, which will show us how the power at various frequencies changes over time. By applying the FFT at a particular instant during the chirp, we can determine the position in time within the chirp of the current FFT. For instance, in the signal above if we apply and FFT at time $t_n=1.0$ and discover high power at frequency $f=\SI{22}{\kilo\hertz}$, we know that the chirp began at time $t_0 = t_n - \tfrac{f - f_0}{f_1 - f_0}T = 1.0 - \tfrac{22-20}{27-20}0.001 = 0.99857$. Another simpler strategy is to slide the waveform you expect to hear across samples of recorded raw input and check for the point of highest correlation. In other words, slide the waveform in figure \ref{fig:chirp} and match it to the received signal. Both of these techniques are used in practice, and we are considering both in our implementation. \cmmnt{what are the pros and cons}
 
-        Our beacon system relies on accurately knowing the distance to a beacon, and therefore knowing exactly when the start of the signal left the transmitter and when the start of the signal arrived at the receiver. Figure \ref{fig:rx_tx_timing} shows the sources of delay we are accounting for, and we describe our methodology for measuring these delays in the \nameref{experiments} section.
+        Our beacon system relies on accurately knowing the distance to a beacon, and therefore knowing exactly when the start of the signal left the transmitter and when the start of the signal arrived at the receiver. Figure \ref{fig:rx_tx_timing} shows the sources of delay we are accounting for, and we describe our methodology for measuring these delays in the \nameref{experiments} section. \\
 
       \begin{figure}
         \centering
@@ -236,7 +283,7 @@
       \end{figure}
 
       \textbf{Path Loss} \\
-      We calculate the free space path loss (FSPL) of the radio signals at the farthest distance from the beacons. For this calculation, we assume the worst case where the beacon is on the other side of the length field, which is $\SI{16.5}{\meter}$ away. Over the more realistic distance of half the width of the field (\SI{5.6}{\meter}), the path loss is only \SI{40}{\decibel}. %The XY-MK-5V receiver module which we will be using has a sensitivity of \SI{105}{\decibel}, so this calculation suggests that they should work for our application. Our empirical testing has also confirmed they also work in practice.
+      We calculate the free space path loss (FSPL) of the radio signals at the farthest distance from the beacons. For this calculation, we assume the worst case where the beacon is on the other side of the length field, which is $\SI{16.5}{\meter}$ away. Over the more realistic distance of half the width of the field (\SI{5.6}{\meter}), the path loss is only \SI{40}{\decibel}. \\
       $$ \text{FSPL} = 20\log_{10}\Bigg(\frac{4\pi Rf^2}{c^2}\Bigg) = 20\log_{10}\Bigg(\frac{4\pi*16.5*\SI{433e6}{\hertz}}{\SI{3e8}{\meter\per\second}}\Bigg) = 49.521 $$
 
       \begin{table}
@@ -261,53 +308,13 @@
       \end{table}
 
       \textbf{Self-Localization of Beacons} \\
+      Beacons that can automatically discover each other and their reliative positions will tremendously improve the easy of setup for the beacon system. We believe this is possible, and in this section we describe a protocol for doing so.
+
+      When the first beacon is turned on, it will listen for radio packets for a brief period of time to check if it is the first beacon to be turned on. If it hears nothing, it will assume it is the first beacon and assign itself ID 0. This beacon will be responsible for sending the synchronizing radio pulse as well as handle the distribution of IDs to the other beacons. At this point, beacon 0 will send packets advertising that ID 1 is available. When the next beacon is turned on, it will get the message that ID 1 is avilable, assign itself that ID, and respond with an ACK message confirming that ID 1 is now taken. Beacon 0 will then begin advertising that ID 2 is available. This process continues for N beacons. Once each beacon has its asigned ID number, beacon 0 will start organizing the self-localization of each beacon. First, beacon 0 will send a packet telling everyone that beacon 0 will transmit ultrasonic. All beacons other than beacon 0 will hear this and start a timer, and beacon 0 will itself transmit ultrasonic. Each beacon will receive this ultrasonic and compute its distance to beacon 0. After wiating a fixed period of time (such as \SI{50}{\milli\second}) for this process to complete, beacon 0 will send a packet telling everyone that beacon 1 willtransmit ultrasonic. This process continues until every beacon has recorded its distance to every other beacon. At this point, beacon 0 will tell each beacon sequentially to report its distance calculations to beacon 0. Beacon 0 will then compute the location of every beacons by minimizing the least squares error in the system of equations defining the beacon locations. Finally, it will report the resulting positions to all the beacons. These communications can also be monitors from a laptop with an inexpensive USB software defined radio, such that the status and result of this process can be shown in a GUI and debugging information can be communicated. \\
 
       \textbf{Number of beacons needed} \\
       The number of beacons can be decided once the range and beam pattern of the beacons is known. To do this, a rigorous test that measures the sound level at various angles and distance will be performed. Once this is known, we can offer a tool or set of steps to determine how many beacons are needed and where beacons should be placed.
 
-  \subsection{Timeline and Goals}
-
-    To maximize the likelihood that our project is complete in timely manner and with rigorous methodology, we have drafted a set of goals and a timeline to help us manage our time. Below we present our set of \textit{must} goals, which we have agreed are all required for our project to be a success (in no particular order).
-
-    \begin{itemize}
-      \item Support 4 wheel differential drive robots moving at continuous driving speeds of up to \SI{3}{\meter\per\second}
-      \item Support the NavX and do complementary and basic Kalman filtering
-      \item Differentiate between tags with the camera and measure pose relative to them with a standard 720p webcam.
-      \item Beacons provide global position updates.
-      \item Use the out of the box OpenCV API to get x and y translation between frames
-      \item Provide a GUI for specifying the configuration of the sensors on the robot and the configuration of the field or practice space.
-      \item Accurately describe the conditions under which camera localization will work, especially with respect to jitter and occlusion.
-      \item Support getting the position from each subsystem individually
-      \item Support getting one fused position update
-      \item Specify what kinds of sensor mounting configurations are supported
-      \item Specify which of the subsystems are necessary and which are optional (encoders are necessary, IMUs are optional)
-      \item Provide the designs and the code for the beacons, such that teams do not need to edit the code. Any constants are in a configuration file.
-      \item Must Provide the optimal analysis or coverage of an empty FRC field and the 2018 field
-      \item Must Provide the methodology for finding the optimal placement of tags and beacons for other shape fields (describe what we did to get part 6.g.i)
-      \item Must fail gracefully when some of the sensing techniques are unreliable or failing
-    \end{itemize}
-
-    These goals will hopefully constrain the scope of each localization technique such that all of them can be incorporated to some degree. Furthermore, we have drafted a timeline of which of these goals we will focus on over the course of the year. For example, by choosing to start with encoders, IMUs, and cameras, we will be able to have a working localization system even without the other techniques. Additionally, we hope that by giving an end date for some of the components we will be able to move on and not spend too long optimizing any one component.
-
-    \begin{itemize}
-      \item B Term:
-      \begin{itemize}
-        \item Meet goals for encoders, IMUs, and cameras with tags
-        \item Specifying robot configuration and tag locations in the GUI
-      \end{itemize}
-      \item C Term:
-      \begin{itemize}
-        \item Meet goals for beacons and optical flow
-        \item Fuse all techniques into one position update
-        \item GUI supports configuring beacons
-      \end{itemize}
-      \item D Term:
-      \begin{itemize}
-        \item Meet documentation goals for teams
-        \item Provide the designs and the code for all components
-        \item Write the final report
-      \end{itemize}
-    \end{itemize}
 
 \section{Conclusion} \label{conclusion}
 
