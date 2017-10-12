@@ -98,7 +98,7 @@
 	Optical flow is a technique that tracks the movement of pixels between camera frames \cite{odonovan_optical_2005}. There are many assumptions about the image that have to be made in order to calculate optical flow. The first is that the lighting in the image stays consistent throughout the sequence of images. In image sequences with inconsistent lighting, transparent objects would all violate this assumption so the amount in the image should be made as small as possible.
   There are many methods of calculating optical flow that deal with different constraints with lead to varying drawbacks and benefits. This first is the Horn and Schunk method which calculates optical flow of the whole image. Because it operates on the whole image, it is considered a global method. Along with the lighting constraint, the Horn and Shunk method also requires that the optical flow field should be as smooth as possible and have few variations in the image. The way optical flow is calculated is it finds the error for every pixels optical flow vector. The error is based on how much of the two constraints there are. The more illumination between pixels surrounding it and the less smooth it is across pixels the higher the error will be. It only checks the illumination and smoothness in a few pixels surrounding each pixel, it does not compare every pixel to every other pixel in an image. It then adds up all of the error values it found which is called temporal gradient. It does this for the $x$ components and $y$ components. It also finds the error in the difference between the an average previous optical flow vector and the current ones spatial gradients and temporal gradients. The spatial gradient is the $x$ component and $y$ component difference between the pixel and each neighboring pixel. It then uses these found values in the an equation to find the optical flow vector of the current pixel. These values are used in the equation below. $I_x$  and $I_y$  are the spatial gradient of the current pixel. $I_t$ is the temporal gradient of the current pixel. $\alpha$ is a weighting term. $\bar{u}$ and $\bar{v}$ are the neighboring pixels average optical flow vector values for $\bar{u}$ and $\bar{v}$. This is expressed formally in equation \ref{eq:hotnandschunk} \cite{odonovan_optical_2005}. $n$ represents which iteration it is on. Each current pixels optical flow is calculated based on previous iterations pixels. This is one of the most popular global optical flow methods.
 
-      \begin{figure}
+      \begin{figure}[H]
         \centering
         \begin{equation}
           \begin{split}
@@ -112,7 +112,7 @@
 
   Optical flow can also be done locally using the Lucas Kanade method \cite{sun_optical_nodate}. This methods is based off of the assumption that the optical flow vector of pixels are similar to their surrounding pixels. This method finds optical flow vectors that are consistent with its neighboring pixels temporal gradients and spatial gradients. Each neighbor is then given a weight based off of how close it is to the pixel. The farther away a pixel is the lower a weight it is assigned. This is because spatial and temporal gradients are based on how far away a pixel is so the error will be larger. Having a lower weight will reduce this. The formula for the optical flow vector is a least squares equation shown below in equation \ref{eq:lucaskanade} \cite{odonovan_optical_2005}.
 
-      \begin{figure}
+      \begin{figure}[H]
         \centering
         \begin{equation}
           \begin{split}
@@ -134,7 +134,9 @@
 
   Inertial sensing offers several promising results, but suffers from accumulated drift is not developed enough to function as a stand-alone localization system. The cost of the sensor is inversely proportional to error, and high quality devices are prohibitively expensive. A majority of end-users of the system proposed in this paper have experience with inertial sensing, presenting a need for support of basic features such as heading detection and filtering. This complements other subsystems because they suf)fer from lower update frequencies and physical sources of error. In this way, an IMU is used to complement an existing suite of sensors. Although research in this field is extensive, much is developed around outdoor navigation or aeronautics and requires some adaptation. Extensive incorporation of advanced filtering or state estimation techniques may be out of scope for this project.
   
-  However, research suggests that a system integrating encoder data with an INS can offer pose tracking within 10\% error on a trajectory of several meters. This is because simple filtering models on encoder data are generally effective against slip and turning, and heading data from most INSs are sufficiently accurate. Using a Kobuki Turtlebot\texttrademark indoor robot platform and the NavX\texttrademark IMU, a state space model of the system will be developed and used for basic relative localization. The results will be compared against
+  However, research suggests that a system integrating encoder data with an INS can offer pose tracking within 10\% error on a trajectory of several meters. This is because simple filtering models on encoder data are generally effective against slip and turning, and heading data from most INSs are sufficiently accurate. Using a Kobuki Turtlebot\texttrademark indoor robot platform and the NavX\texttrademark IMU, a state space model of the system will be developed and used for basic relative localization. The results will be compared against the robot_pose_ekf ROS package which offers similar functionality. An experiment was designed to obtain information characterizing the error of the IMU and gyroscope, but could not be completed prior to the completion of this report due to constrains on time. The NavX INS will be placed in an area free from sources of vibration. The IMU will collect timestamped data at several fixed frequencies over several hours. The purpose of this is to obtain information about the static error in the system and characterize it  using time and frequency domain features. Additionally, the system will be tested for drift in update frequency which may cause errors in sensor integration.
+  
+  From previous experimentation using 
 
   Occlusion is one of the major challenges facing global localization systems designed for FRC. In many cases, there are other robots or field obstacles than can block vision or ultrasonic signals. However, there are no obstacles that would block radio or other high frequency signals. Lidar and ultrasonic systems both struggle in this case because the map of the field is interrupted. Occlusion is also problematic for cameras looking for tags and ultrasonic beacons. However, local pose estimation techniques like encoders and IMUs are unaffected by occlusion. Pairing IMUs and encoders with cameras or beacons has the advantage of not failing completely during short periods of occlusion. Furthermore, by using both beacons and cameras, we can increase likelihood that one of the two systems will be able to reach their landmarks. Wireless networks perform very under these scenarios, but they require knowledge and control over the 2.5 gHz spectrum in the area where they are used. At FRC events, there can be dozens of wireless networks running, as well as the wireless networks used on the field for communication between robots. For this reason, we feel that techniques using wireless frequency have too many unknown variables.
 
@@ -175,7 +177,34 @@
         \caption{Frequency response of the NTX-1004PZ. The best response is achieved at 22kHz, and the highest detectable frequency is 27kHz.}
         \label{fig:frequency_response}
       \end{figure}
+      
+	\subsection{Optical Flow}
+    Preliminary testing has been done using a Microsoft USB camera using the sample code provided for dense optical flow in OpenCV. In the screenshot below it can be see in the window labeled flow that there are a variety of green dots on the screen. These are the points that dense optical flow has identified. There is also a green line which is the motion vector of which way the frames are moving. The middle window labeled HSV flow is adding color to the different points that are currently the best for tracking on the frame. The bottom window labeled glitch is the current frame and previous ones overlaid showing all of the motion that has happened.
+    %image
+	Testing was then done with the demo for Lucas Kanade based optical flow. Tests were done using lkdemo.cpp which was a sample file provided by openCV. Tests were done to see how running this program on a laptop verse the roboRIO and compare the time they took to run the code. The laptop that the code was run on has a 2.8 GHz Intel Core i7 processor for reference. A chart below was made of the time that each program took to run 100 frames in seconds. 
+   \begin{table}
+        \label{table:optical_flow_benchmark}
+        \begin{tabular}{|l|l|}
+          \hline
+          Item & Cost per Beacon \\
+          \hline
+          PSoc 5LP & \$10.00 \\
+          RF Tx/Rx Pair & \$1.68 \\
+          piezo speaker & \$1.65 \\
+          9v battery & \$1.19 \\
+          battery connector & \$0.54 \\
+          LCD display & \$3.90 (optional) \\
+          resistors and capacitors & \$5.00 (estimate) \\
+          prototyping board & \$5.00 (estimate) \\
+          \hline
+          Total & 28.96 \\
+          \hline
+        \end{tabular}
+        \caption{estimated bill of material for beacons}
+      \end{table}
+	After measuring each 5 times to check for repeatability it can be seen looking at the chart except for the last row how fast in seconds it took for each of the devices to run 100 frames. The last row frames per second was calculated for each device with the laptop reading approximately 26 FPS and the roboRIO reading 12 FPS. While the laptop was over twice that of the roboRIO the 12 FPS rate is still fast enough to meet the needs of the project. Other preliminary tests were done with shaking the camera as the program was running after having it initialize the image with marked pixels it had deemed best for measuring. After some shaking of the camera most marked pixels had stayed and only ones that were causes to go off screen by the shaking disappeared. The pixels that the program had decided to measure were based off of what types of pixels work best for Lucas Kanade base optical flow described in the research section of the paper		.
 
+    
 \section{System Specification} \label{specs}
 
   \subsection{Vision for the Product}
